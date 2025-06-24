@@ -1,0 +1,52 @@
+.appbarContainer {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 70px;
+  background: #1aac83;
+  color: #fff;
+}
+
+.appbarElement {
+  cursor: pointer;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.appbarElement p {
+  margin-bottom: 10px;
+}
+
+.underBar {
+  width: 0%;
+  height: 1px;
+  background-color: #fff;
+}
+
+.growBar {
+  animation: growBarAnimation 0.3s ease-in-out forwards;
+}
+
+.shrinkBar {
+  animation: shrinkBarAnimation 0.3s ease-in-out forwards;
+}
+
+@keyframes growBarAnimation {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes shrinkBarAnimation {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}

@@ -1,0 +1,10 @@
+.description:focus {
+  border: 2px solid #10cd98;
+}
+
+.description {
+  width: 98%;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  outline: none;
+}

@@ -25,6 +25,7 @@ import { useAuthContext } from "../../hooks/useAuthContext";
 import { env } from "../../config/environment";
 import { useAlbumWorkoutsContext } from "../../hooks/useAlbumWorkoutsContext";
 import AlbumWorkoutContent from "../../components/AlbumWorkoutContent";
+import { sort } from "../../ultilities/algorithms";
 
 function AlbumWorkout() {
   const [openModalCreateAlbum, setOpenModalCreateAlbum] = useState(false);
@@ -34,7 +35,9 @@ function AlbumWorkout() {
   const [descriptionAlbum, setDescriptionAlbum] = useState("");
   const [statusAlbum, setStatusAlbum] = useState("Public");
   const [isLoading, setIsLoading] = useState(false);
-  const [isLoadingPage, setIsLoadingPage] = useState(false);
+  const [optionSort, setOptionSort] = useState("Lastest");
+  const [albumWorkoutDataDisplay, setAlbumWorkoutDataDisplay] = useState([]);
+  const [searchValue, setSearchValue] = useState("");
   const { user } = useAuthContext();
   const { albumWorkouts, dispatchAlbumWorkoutContext } =
     useAlbumWorkoutsContext();
@@ -156,6 +159,8 @@ function AlbumWorkout() {
               setTitleAlbum("");
               setDescriptionAlbum("");
               setStatusAlbum("Public");
+              setFileUpload("");
+              setTypeFileUpload("");
               setOpenModalCreateAlbum(false);
               setIsLoading(false);
             }
@@ -208,22 +213,107 @@ function AlbumWorkout() {
       toast.error("Something went wrong! Please try again!");
     }
   }, [user, dispatchAlbumWorkoutContext]);
+
+  useEffect(() => {
+    if (albumWorkouts?.length > 0) {
+      if (optionSort === "Lastest") {
+        dispatchAlbumWorkoutContext({
+          type: "SET_ALBUM_WORKOUTS",
+          payload: sort([...albumWorkouts], "createdAt", 1),
+        });
+      }
+      if (optionSort === "Oldest") {
+        dispatchAlbumWorkoutContext({
+          type: "SET_ALBUM_WORKOUTS",
+          payload: sort([...albumWorkouts], "createdAt", 0),
+        });
+      }
+      if (optionSort === "Likes") {
+        dispatchAlbumWorkoutContext({
+          type: "SET_ALBUM_WORKOUTS",
+          payload: sort([...albumWorkouts], "likeNumber", 1),
+        });
+      }
+    }
+  }, [optionSort, dispatchAlbumWorkoutContext]);
+
+  useEffect(() => {
+    setAlbumWorkoutDataDisplay(albumWorkouts);
+  }, [albumWorkouts]);
+
+  useEffect(() => {
+    if (searchValue) {
+      setAlbumWorkoutDataDisplay(
+        albumWorkouts.filter((item) =>
+          item?.title
+            ?.toLocaleLowerCase()
+            .includes(searchValue.toLocaleLowerCase())
+        )
+      );
+    } else {
+      setAlbumWorkoutDataDisplay(albumWorkouts);
+    }
+  }, [searchValue, albumWorkouts]);
   return (
     <div>
-      <Button
-        startIcon={<CreateNewFolderIcon />}
+      <Box
         sx={{
-          color: "#fff",
-          backgroundColor: "#10cd98",
-          textTransform: "none",
-          "&:hover": {
-            backgroundColor: "rgb(17 122 93)",
-          },
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
         }}
-        onClick={() => setOpenModalCreateAlbum(true)}
       >
-        Create album
-      </Button>
+        <Button
+          startIcon={<CreateNewFolderIcon />}
+          sx={{
+            color: "#fff",
+            backgroundColor: "#10cd98",
+            textTransform: "none",
+            "&:hover": {
+              backgroundColor: "rgb(17 122 93)",
+            },
+          }}
+          onClick={() => setOpenModalCreateAlbum(true)}
+        >
+          Create album
+        </Button>
+        <TextField
+          size="small"
+          id="outlined-search"
+          label="Search"
+          placeholder="Search name..."
+          type="text"
+          value={searchValue}
+          onChange={(e) => setSearchValue(e.target.value)}
+          sx={{
+            // minWidth: "120px",
+            // maxWidth: "190px",
+            ".MuiInputBase-input": {
+              color: "#000",
+            },
+            "& label": {
+              color: "#10cd98",
+            },
+            "& label.Mui-focused": {
+              color: "#10cd98",
+            },
+            "& .MuiInputBase-root": {
+              "& fieldset": {
+                borderColor: "#17e6ac",
+              },
+
+              "&:hover fieldset": {
+                borderColor: "#0da87d",
+              },
+
+              "&.Mui-focused fieldset": {
+                borderColor: "#10cd98",
+              },
+            },
+          }}
+        />
+      </Box>
+
       <Modal
         open={openModalCreateAlbum}
         onClose={() => {
@@ -450,9 +540,72 @@ function AlbumWorkout() {
           </Box>
         </Box>
       </Modal>
-      <h1>Album workout</h1>
 
-      {albumWorkouts?.length > 0 ? (
+      <Box sx={{ width: "175px", marginTop: "30px" }}>
+        <FormControl
+          variant="outlined"
+          sx={{
+            "& label": {
+              color: "#000",
+            },
+            "& label.Mui-focused": {
+              color: "#000",
+            },
+          }}
+          fullWidth
+        >
+          <InputLabel id="demo-simple-select-label">Option sorting</InputLabel>
+          <Select
+            sx={{
+              ".MuiOutlinedInput-notchedOutline": {
+                borderColor: "#10cd98",
+              },
+              "&:hover .MuiOutlinedInput-notchedOutline": {
+                borderColor: "#10cd98",
+              },
+              "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                borderColor: "#10cd98",
+              },
+            }}
+            labelId="demo-simple-select-label"
+            id="demo-simple-select"
+            value={optionSort}
+            label="Option sorting"
+            onChange={(e) => setOptionSort(e.target.value)}
+          >
+            <MenuItem value="Lastest">Latest</MenuItem>
+            <MenuItem value="Oldest">Oldest</MenuItem>
+            <MenuItem value="Likes">Likes</MenuItem>
+          </Select>
+        </FormControl>
+      </Box>
+
+      {/* {albumWorkouts ? ( */}
+      {albumWorkoutDataDisplay ? (
+        // albumWorkouts?.length > 0 ? (
+        albumWorkoutDataDisplay?.length > 0 ? (
+          <Box
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "20px",
+            }}
+          >
+            {/* {albumWorkouts?.map( */}
+            {albumWorkoutDataDisplay?.map(
+              (albumWorkout) =>
+                albumWorkout?.status === "Public" && (
+                  <AlbumWorkoutContent
+                    albumWorkout={albumWorkout}
+                    key={albumWorkout?._id}
+                  />
+                )
+            )}
+          </Box>
+        ) : (
+          <p>There are no album workouts here!</p>
+        )
+      ) : (
         <Box
           sx={{
             display: "flex",
@@ -460,53 +613,34 @@ function AlbumWorkout() {
             gap: "20px",
           }}
         >
-          {albumWorkouts?.map(
-            (albumWorkout) =>
-              albumWorkout?.status === "Public" && (
-                <AlbumWorkoutContent
-                  albumWorkout={albumWorkout}
-                  key={albumWorkout?._id}
-                />
-              )
-          )}
+          <Box sx={{ width: "330px", height: "fit-content" }}>
+            <Skeleton animation="wave" />
+            <Skeleton animation="wave" />
+            <Skeleton animation="wave" />
+            <Skeleton animation="wave" />
+          </Box>
+          <Box sx={{ width: "330px", height: "fit-content" }}>
+            <Skeleton animation="wave" />
+            <Skeleton animation="wave" />
+            <Skeleton animation="wave" />
+            <Skeleton animation="wave" />
+          </Box>
+          <Box sx={{ width: "330px", height: "fit-content" }}>
+            <Skeleton animation="wave" />
+            <Skeleton animation="wave" />
+            <Skeleton animation="wave" />
+            <Skeleton animation="wave" />
+          </Box>
+          <Box sx={{ width: "330px", height: "fit-content" }}>
+            <Skeleton animation="wave" />
+            <Skeleton animation="wave" />
+            <Skeleton animation="wave" />
+            <Skeleton animation="wave" />
+          </Box>
         </Box>
-      ) : (
-        <p>There are no album workouts here!</p>
       )}
     </div>
   );
 }
 
-<Box
-  sx={{
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "20px",
-  }}
->
-  <Box sx={{ width: "330px", height: "fit-content" }}>
-    <Skeleton animation="wave" />
-    <Skeleton animation="wave" />
-    <Skeleton animation="wave" />
-    <Skeleton animation="wave" />
-  </Box>
-  <Box sx={{ width: "330px", height: "fit-content" }}>
-    <Skeleton animation="wave" />
-    <Skeleton animation="wave" />
-    <Skeleton animation="wave" />
-    <Skeleton animation="wave" />
-  </Box>
-  <Box sx={{ width: "330px", height: "fit-content" }}>
-    <Skeleton animation="wave" />
-    <Skeleton animation="wave" />
-    <Skeleton animation="wave" />
-    <Skeleton animation="wave" />
-  </Box>
-  <Box sx={{ width: "330px", height: "fit-content" }}>
-    <Skeleton animation="wave" />
-    <Skeleton animation="wave" />
-    <Skeleton animation="wave" />
-    <Skeleton animation="wave" />
-  </Box>
-</Box>;
 export default AlbumWorkout;

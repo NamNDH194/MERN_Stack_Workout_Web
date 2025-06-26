@@ -113,18 +113,40 @@ const Home = () => {
           <div style={{ display: "flex", flexDirection: "column" }}>
             {workouts?.length > 0 ? (
               <Box sx={{ width: "175px" }}>
-                <FormControl variant="filled" fullWidth>
+                <FormControl
+                  variant="outlined"
+                  sx={{
+                    "& label": {
+                      color: "#000",
+                    },
+                    "& label.Mui-focused": {
+                      color: "#000",
+                    },
+                  }}
+                  fullWidth
+                >
                   <InputLabel id="demo-simple-select-label">
                     Option sorting
                   </InputLabel>
                   <Select
+                    sx={{
+                      ".MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#10cd98",
+                      },
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#10cd98",
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#10cd98",
+                      },
+                    }}
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
                     value={optionSort === "Lastest" ? "Lastest" : "Oldest"}
                     label="Option sorting"
                     onChange={(e) => setOptionSort(e.target.value)}
                   >
-                    <MenuItem value="Lastest">Lastest</MenuItem>
+                    <MenuItem value="Lastest">Latest</MenuItem>
                     <MenuItem value="Oldest">Oldest</MenuItem>
                   </Select>
                 </FormControl>

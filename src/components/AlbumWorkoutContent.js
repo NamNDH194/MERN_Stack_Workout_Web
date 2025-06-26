@@ -1,43 +1,48 @@
-import { toast } from "react-toastify";
 import { format } from "date-fns";
-import { useAuthContext } from "../hooks/useAuthContext";
+import { useEffect, useState } from "react";
+import { env } from "../config/environment";
+import { API_ROOT } from "../ultilities/constants";
+import { toast } from "react-toastify";
 import { useAlbumWorkoutsContext } from "../hooks/useAlbumWorkoutsContext";
-import { useState } from "react";
+import { useAuthContext } from "../hooks/useAuthContext";
 import styles from "../pages/AlbumWorkout/AlbumWorkout.module.css";
 
 import BookmarkIcon from "@mui/icons-material/Bookmark";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
+import EditNoteIcon from "@mui/icons-material/EditNote";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import PublicIcon from "@mui/icons-material/Public";
+import VpnLockIcon from "@mui/icons-material/VpnLock";
 import Avatar from "@mui/material/Avatar";
+import Backdrop from "@mui/material/Backdrop";
 import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
 import CardContent from "@mui/material/CardContent";
 import CardHeader from "@mui/material/CardHeader";
 import CardMedia from "@mui/material/CardMedia";
+import CircularProgress from "@mui/material/CircularProgress";
+import Dialog from "@mui/material/Dialog";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
+import Fade from "@mui/material/Fade";
+import FormControl from "@mui/material/FormControl";
 import IconButton from "@mui/material/IconButton";
-import Typography from "@mui/material/Typography";
+import InputLabel from "@mui/material/InputLabel";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
-import Tooltip from "@mui/material/Tooltip";
-import EditNoteIcon from "@mui/icons-material/EditNote";
-import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-import Button from "@mui/material/Button";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import { styled } from "@mui/material/styles";
-import PublicIcon from "@mui/icons-material/Public";
-import VpnLockIcon from "@mui/icons-material/VpnLock";
-import TextField from "@mui/material/TextField";
 import Modal from "@mui/material/Modal";
-import TextareaAutosize from "@mui/material/TextareaAutosize";
-import FormControl from "@mui/material/FormControl";
-import InputLabel from "@mui/material/InputLabel";
 import Select from "@mui/material/Select";
-import CircularProgress from "@mui/material/CircularProgress";
-import { API_ROOT } from "../ultilities/constants";
-import { env } from "../config/environment";
-import Fade from "@mui/material/Fade";
-import Backdrop from "@mui/material/Backdrop";
+import { styled } from "@mui/material/styles";
+import TextareaAutosize from "@mui/material/TextareaAutosize";
+import TextField from "@mui/material/TextField";
+import Tooltip from "@mui/material/Tooltip";
+import Typography from "@mui/material/Typography";
+import CancelIcon from "@mui/icons-material/Cancel";
 
 function AlbumWorkoutContent({ albumWorkout }) {
   const { user } = useAuthContext();
@@ -51,6 +56,8 @@ function AlbumWorkoutContent({ albumWorkout }) {
   const [isLoading, setIsLoading] = useState(false);
   const [openModalUpdate, setOpenModalUpdate] = useState(false);
   const [openModalDelete, setOpenModalDelete] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
+  const [openDialogLikeUsers, setOpenDialogLikeUsers] = useState(false);
 
   const { dispatchAlbumWorkoutContext } = useAlbumWorkoutsContext();
 
@@ -89,6 +96,16 @@ function AlbumWorkoutContent({ albumWorkout }) {
     whiteSpace: "nowrap",
     width: 1,
   });
+
+  useEffect(() => {
+    if (albumWorkout) {
+      albumWorkout.likedUsers.forEach((item) => {
+        if (item._id.includes(user?.userId)) {
+          setIsLiked(true);
+        }
+      });
+    }
+  }, [albumWorkout, user]);
 
   const handleCloseMenu = () => {
     setAnchorEl(null);
@@ -171,7 +188,7 @@ function AlbumWorkoutContent({ albumWorkout }) {
               imgURL: imgUrl,
               status: statusAlbum,
               imgPublicId: img_public_id,
-              oldImgPublicId: albumWorkout.imgPublicId,
+              oldImgPublicId: albumWorkout?.imgPublicId,
             };
             if (titleAlbum) {
               albumWorkoutData.title = titleAlbum;
@@ -288,7 +305,34 @@ function AlbumWorkoutContent({ albumWorkout }) {
   };
 
   const handleLikeAlbum = async () => {
-    console.log("Like Album");
+    const response = await fetch(
+      `${API_ROOT}/v1/albumWorkout/like/${albumWorkout._id}`,
+      {
+        method: "POST",
+        body: isLiked
+          ? JSON.stringify({ isLike: false })
+          : JSON.stringify({ isLike: true }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user?.token}`,
+        },
+      }
+    );
+    const json = await response.json();
+    if (response.ok) {
+      setIsLiked(!isLiked);
+      dispatchAlbumWorkoutContext({
+        type: "UPDATE_ALBUM_WORKOUT",
+        payload: json,
+      });
+    }
+    if (!response.ok) {
+      toast.error("Something went wrong! please try again!");
+    }
+  };
+
+  const handleShowLikedUsers = () => {
+    setOpenDialogLikeUsers(true);
   };
 
   const handleSaveAlbum = async () => {
@@ -314,15 +358,12 @@ function AlbumWorkoutContent({ albumWorkout }) {
     >
       <CardHeader
         avatar={
-          <Tooltip title={albumWorkout?.user?.userName}>
-            <Avatar
-              aria-label="recipe"
-              src={albumWorkout?.user?.avatarImg}
-            ></Avatar>
+          <Tooltip title={albumWorkout?.userName}>
+            <Avatar aria-label="recipe" src={albumWorkout?.avatarImg}></Avatar>
           </Tooltip>
         }
         action={
-          user?.userId === albumWorkout?.user?._id ? (
+          user?.userId === albumWorkout?.userId ? (
             <>
               <IconButton
                 aria-label="settings"
@@ -721,14 +762,96 @@ function AlbumWorkoutContent({ albumWorkout }) {
         </Typography>
       </CardContent>
       <CardActions disableSpacing>
-        <Tooltip title="Like">
-          <IconButton aria-label="add to favorites" onClick={handleLikeAlbum}>
-            <FavoriteIcon />
-          </IconButton>
-        </Tooltip>
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          <Tooltip title="Like">
+            <IconButton aria-label="add to favorites" onClick={handleLikeAlbum}>
+              <FavoriteIcon
+                sx={{ color: isLiked ? "#E00000" : "rgb(117 117 117)" }}
+              />
+            </IconButton>
+          </Tooltip>
+          <Typography
+            sx={{
+              fontSize: "20.5px",
+              color: "#0b8c68",
+              "&:hover": { color: "#13cfac" },
+            }}
+            onClick={handleShowLikedUsers}
+          >
+            {albumWorkout?.likeNumber <= 0 ? "" : albumWorkout?.likeNumber}
+          </Typography>
+          <Dialog
+            open={openDialogLikeUsers}
+            keepMounted
+            onClose={() => setOpenDialogLikeUsers(false)}
+            aria-describedby="alert-dialog-slide-description"
+          >
+            <DialogTitle
+              sx={{ display: "flex", justifyContent: "space-between" }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <FavoriteIcon sx={{ color: "#E00000" }} />
+                <span style={{ fontSize: "20.5px", color: "#0b8c68" }}>
+                  {albumWorkout?.likeNumber <= 0
+                    ? ""
+                    : albumWorkout?.likeNumber}
+                </span>
+              </Box>
+
+              <Box onClick={() => setOpenDialogLikeUsers(false)}>
+                <CancelIcon
+                  sx={{
+                    color: "#bdbdbd",
+                    "&:hover": {
+                      color: "#a4a4a4",
+                    },
+                    fontSize: "30px",
+                    cursor: "pointer",
+                  }}
+                />
+              </Box>
+            </DialogTitle>
+            <DialogContent
+              sx={{
+                width: "300px",
+                overflowY: "auto",
+                maxHeight: "210px",
+              }}
+            >
+              <DialogContentText id="alert-dialog-slide-description">
+                {albumWorkout.likedUsers.map((item) => {
+                  return (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "20px",
+                        marginBottom: "20px",
+                      }}
+                      key={item?._id}
+                    >
+                      <Avatar
+                        aria-label="recipe"
+                        src={item?.avatarImg}
+                        sx={{ cursor: "pointer" }}
+                      ></Avatar>
+                      <span style={{ cursor: "pointer" }}>
+                        {item?.userName}
+                      </span>
+                    </Box>
+                  );
+                })}
+              </DialogContentText>
+            </DialogContent>
+          </Dialog>
+        </Box>
 
         <Tooltip title="Save to storage">
-          <IconButton aria-label="share" onClick={handleSaveAlbum}>
+          <IconButton
+            aria-label="share"
+            onClick={handleSaveAlbum}
+            sx={{ marginLeft: "10px" }}
+          >
             <BookmarkIcon aria-label="add to store" />
           </IconButton>
         </Tooltip>

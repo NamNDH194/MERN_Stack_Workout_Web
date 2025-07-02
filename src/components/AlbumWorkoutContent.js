@@ -1,5 +1,6 @@
 import { format } from "date-fns";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { env } from "../config/environment";
 import { API_ROOT } from "../ultilities/constants";
 import { toast } from "react-toastify";
@@ -58,6 +59,8 @@ function AlbumWorkoutContent({ albumWorkout }) {
   const [openModalDelete, setOpenModalDelete] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [openDialogLikeUsers, setOpenDialogLikeUsers] = useState(false);
+
+  const navigate = useNavigate();
 
   const { dispatchAlbumWorkoutContext } = useAlbumWorkoutsContext();
 
@@ -468,9 +471,10 @@ function AlbumWorkoutContent({ albumWorkout }) {
                     sx={{
                       marginTop: "10px",
                       backgroundColor: "#10cd98",
+                      textTransform: "none",
                     }}
                   >
-                    Upload files
+                    Upload image
                     <VisuallyHiddenInput
                       type="file"
                       onChange={(e) => {
@@ -696,6 +700,14 @@ function AlbumWorkoutContent({ albumWorkout }) {
                                   pointerEvents: "auto",
                                 }
                           }
+                          sx={{
+                            textTransform: "none",
+                            backgroundColor: "#10cd98",
+                            color: "#fff",
+                            "&:hover": {
+                              backgroundColor: "rgb(17 122 93)",
+                            },
+                          }}
                         >
                           {isLoading ? (
                             <CircularProgress
@@ -718,6 +730,14 @@ function AlbumWorkoutContent({ albumWorkout }) {
                                   pointerEvents: "auto",
                                 }
                           }
+                          sx={{
+                            textTransform: "none",
+                            backgroundColor: "#10cd98",
+                            color: "#fff",
+                            "&:hover": {
+                              backgroundColor: "rgb(17 122 93)",
+                            },
+                          }}
                         >
                           Cancel
                         </Button>
@@ -756,105 +776,136 @@ function AlbumWorkoutContent({ albumWorkout }) {
         />
       </Box>
 
-      <CardContent>
+      <CardContent
+        sx={{
+          overflowY: "auto",
+          overflowX: "hidden",
+          height: "50px",
+          width: "330px",
+        }}
+      >
         <Typography variant="body2" sx={{ color: "text.secondary" }}>
           {albumWorkout?.description}
         </Typography>
       </CardContent>
-      <CardActions disableSpacing>
+      <CardActions
+        disableSpacing
+        sx={{ display: "flex", justifyContent: "space-between" }}
+      >
         <Box sx={{ display: "flex", alignItems: "center" }}>
-          <Tooltip title="Like">
-            <IconButton aria-label="add to favorites" onClick={handleLikeAlbum}>
-              <FavoriteIcon
-                sx={{ color: isLiked ? "#E00000" : "rgb(117 117 117)" }}
-              />
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Tooltip title="Like">
+              <IconButton
+                aria-label="add to favorites"
+                onClick={handleLikeAlbum}
+              >
+                <FavoriteIcon
+                  sx={{ color: isLiked ? "#E00000" : "rgb(117 117 117)" }}
+                />
+              </IconButton>
+            </Tooltip>
+            <Typography
+              sx={{
+                fontSize: "20.5px",
+                color: "#0b8c68",
+                "&:hover": { color: "#13cfac" },
+              }}
+              onClick={handleShowLikedUsers}
+            >
+              {albumWorkout?.likeNumber <= 0 ? "" : albumWorkout?.likeNumber}
+            </Typography>
+            <Dialog
+              open={openDialogLikeUsers}
+              keepMounted
+              onClose={() => setOpenDialogLikeUsers(false)}
+              aria-describedby="alert-dialog-slide-description"
+            >
+              <DialogTitle
+                sx={{ display: "flex", justifyContent: "space-between" }}
+              >
+                <Box sx={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <FavoriteIcon sx={{ color: "#E00000" }} />
+                  <span style={{ fontSize: "20.5px", color: "#0b8c68" }}>
+                    {albumWorkout?.likeNumber <= 0
+                      ? ""
+                      : albumWorkout?.likeNumber}
+                  </span>
+                </Box>
+
+                <Box onClick={() => setOpenDialogLikeUsers(false)}>
+                  <CancelIcon
+                    sx={{
+                      color: "#bdbdbd",
+                      "&:hover": {
+                        color: "#a4a4a4",
+                      },
+                      fontSize: "30px",
+                      cursor: "pointer",
+                    }}
+                  />
+                </Box>
+              </DialogTitle>
+              <DialogContent
+                sx={{
+                  width: "300px",
+                  overflowY: "auto",
+                  maxHeight: "210px",
+                }}
+              >
+                <DialogContentText id="alert-dialog-slide-description">
+                  {albumWorkout.likedUsers.map((item) => {
+                    return (
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "20px",
+                          marginBottom: "20px",
+                        }}
+                        key={item?._id}
+                      >
+                        <Avatar
+                          aria-label="recipe"
+                          src={item?.avatarImg}
+                          sx={{ cursor: "pointer" }}
+                        ></Avatar>
+                        <span style={{ cursor: "pointer" }}>
+                          {item?.userName}
+                        </span>
+                      </Box>
+                    );
+                  })}
+                </DialogContentText>
+              </DialogContent>
+            </Dialog>
+          </Box>
+
+          <Tooltip title="Save to storage">
+            <IconButton
+              aria-label="share"
+              onClick={handleSaveAlbum}
+              sx={{ marginLeft: "10px" }}
+            >
+              <BookmarkIcon aria-label="add to store" />
             </IconButton>
           </Tooltip>
-          <Typography
-            sx={{
-              fontSize: "20.5px",
-              color: "#0b8c68",
-              "&:hover": { color: "#13cfac" },
-            }}
-            onClick={handleShowLikedUsers}
-          >
-            {albumWorkout?.likeNumber <= 0 ? "" : albumWorkout?.likeNumber}
-          </Typography>
-          <Dialog
-            open={openDialogLikeUsers}
-            keepMounted
-            onClose={() => setOpenDialogLikeUsers(false)}
-            aria-describedby="alert-dialog-slide-description"
-          >
-            <DialogTitle
-              sx={{ display: "flex", justifyContent: "space-between" }}
-            >
-              <Box sx={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <FavoriteIcon sx={{ color: "#E00000" }} />
-                <span style={{ fontSize: "20.5px", color: "#0b8c68" }}>
-                  {albumWorkout?.likeNumber <= 0
-                    ? ""
-                    : albumWorkout?.likeNumber}
-                </span>
-              </Box>
-
-              <Box onClick={() => setOpenDialogLikeUsers(false)}>
-                <CancelIcon
-                  sx={{
-                    color: "#bdbdbd",
-                    "&:hover": {
-                      color: "#a4a4a4",
-                    },
-                    fontSize: "30px",
-                    cursor: "pointer",
-                  }}
-                />
-              </Box>
-            </DialogTitle>
-            <DialogContent
-              sx={{
-                width: "300px",
-                overflowY: "auto",
-                maxHeight: "210px",
-              }}
-            >
-              <DialogContentText id="alert-dialog-slide-description">
-                {albumWorkout.likedUsers.map((item) => {
-                  return (
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "20px",
-                        marginBottom: "20px",
-                      }}
-                      key={item?._id}
-                    >
-                      <Avatar
-                        aria-label="recipe"
-                        src={item?.avatarImg}
-                        sx={{ cursor: "pointer" }}
-                      ></Avatar>
-                      <span style={{ cursor: "pointer" }}>
-                        {item?.userName}
-                      </span>
-                    </Box>
-                  );
-                })}
-              </DialogContentText>
-            </DialogContent>
-          </Dialog>
         </Box>
-
-        <Tooltip title="Save to storage">
-          <IconButton
-            aria-label="share"
-            onClick={handleSaveAlbum}
-            sx={{ marginLeft: "10px" }}
-          >
-            <BookmarkIcon aria-label="add to store" />
-          </IconButton>
-        </Tooltip>
+        <Button
+          sx={{
+            textTransform: "none",
+            color: "#fff",
+            backgroundColor: "#10cd98",
+            marginRight: "10px",
+            "&:hover": {
+              backgroundColor: "rgb(17 122 93)",
+            },
+          }}
+          onClick={() => {
+            navigate(`/album_workouts_detail/${albumWorkout._id}`);
+          }}
+        >
+          View details
+        </Button>
       </CardActions>
     </Card>
   );

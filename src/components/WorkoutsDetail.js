@@ -252,6 +252,14 @@ const WorkoutDetail = ({ workout }) => {
                             pointerEvents: "auto",
                           }
                     }
+                    sx={{
+                      textTransform: "none",
+                      backgroundColor: "#10cd98",
+                      color: "#fff",
+                      "&:hover": {
+                        backgroundColor: "rgb(17 122 93)",
+                      },
+                    }}
                   >
                     {isLoading ? (
                       <CircularProgress size="18px" sx={{ color: "#1aac83" }} />
@@ -270,6 +278,14 @@ const WorkoutDetail = ({ workout }) => {
                             pointerEvents: "auto",
                           }
                     }
+                    sx={{
+                      textTransform: "none",
+                      backgroundColor: "#10cd98",
+                      color: "#fff",
+                      "&:hover": {
+                        backgroundColor: "rgb(17 122 93)",
+                      },
+                    }}
                   >
                     Cancel
                   </Button>
@@ -324,6 +340,14 @@ const WorkoutDetail = ({ workout }) => {
                             pointerEvents: "auto",
                           }
                     }
+                    sx={{
+                      textTransform: "none",
+                      backgroundColor: "#10cd98",
+                      color: "#fff",
+                      "&:hover": {
+                        backgroundColor: "rgb(17 122 93)",
+                      },
+                    }}
                   >
                     {isLoading ? (
                       <CircularProgress size="18px" sx={{ color: "#1aac83" }} />
@@ -342,6 +366,14 @@ const WorkoutDetail = ({ workout }) => {
                             pointerEvents: "auto",
                           }
                     }
+                    sx={{
+                      textTransform: "none",
+                      backgroundColor: "#10cd98",
+                      color: "#fff",
+                      "&:hover": {
+                        backgroundColor: "rgb(17 122 93)",
+                      },
+                    }}
                   >
                     Cancel
                   </Button>

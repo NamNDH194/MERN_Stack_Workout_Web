@@ -17,6 +17,7 @@ import Pagination from "@mui/material/Pagination";
 
 import { toast } from "react-toastify";
 import { sort } from "../ultilities/algorithms";
+import CircularProgress from "@mui/material/CircularProgress";
 
 const Home = () => {
   const { workouts, dispatchWorkoutContext } = useWorkoutsContext();

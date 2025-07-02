@@ -1,0 +1,91 @@
+.details {
+  position: absolute;
+  background-color: rgb(174, 170, 170);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 30px;
+  cursor: pointer;
+  top: 0;
+}
+.animationSlideLeftToRight {
+  animation: slideLeftToRight 1s linear forwards;
+}
+.animationSlideRightToLeft {
+  animation: slideRightToLeft 1s linear forwards;
+}
+
+@keyframes slideLeftToRight {
+  0% {
+    left: 0;
+    rotate: 72deg;
+  }
+  100% {
+    left: calc(100% - 52px);
+    rotate: 360deg;
+  }
+}
+
+@keyframes slideRightToLeft {
+  0% {
+    left: calc(100% - 52px);
+    rotate: 360deg;
+  }
+  100% {
+    left: 0;
+    rotate: 0deg;
+  }
+}
+
+.editorContainer {
+  overflow: hidden;
+  transition: height 1s linear, width 1s linear;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.editorContainerExpanded {
+  pointer-events: auto;
+  width: 100%;
+  height: 360px;
+}
+
+.detailsContainerExpanded {
+  border: 2px solid #10cd98;
+  padding: 5px;
+  border-radius: 5px;
+  pointer-events: auto;
+}
+
+.editor {
+  height: 300px !important;
+  background-color: #fff;
+  overflow-y: auto;
+}
+
+.wrapper {
+  border: 2px solid #10cd98;
+  border-radius: 5px;
+  height: 300px !important;
+  display: flex;
+  flex-direction: column;
+}
+
+.toolbar {
+  flex-shrink: 0;
+}
+
+.detailedInstructions:focus {
+  border: 2px solid #10cd98;
+}
+
+.detailedInstructions {
+  width: 98%;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  outline: none;
+}

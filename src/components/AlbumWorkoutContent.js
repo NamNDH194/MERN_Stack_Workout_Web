@@ -500,7 +500,7 @@ function AlbumWorkoutContent({ albumWorkout }) {
                   <Typography variant="h6" sx={{ marginTop: "20px" }}>
                     Album description
                   </Typography>
-                  <Box sx={{ overflowY: "scroll", maxHeight: "200px" }}>
+                  <Box sx={{ overflowY: "auto", maxHeight: "200px" }}>
                     <TextareaAutosize
                       aria-label="Album description"
                       minRows={3}

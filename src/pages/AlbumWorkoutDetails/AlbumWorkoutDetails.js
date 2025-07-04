@@ -5,7 +5,7 @@ import { useAuthContext } from "../../hooks/useAuthContext";
 import { useAlbumWorkoutsContext } from "../../hooks/useAlbumWorkoutsContext";
 import { toast } from "react-toastify";
 import styles from "./AlbumWorkoutDetails.module.css";
-import { isEmpty } from "lodash";
+import { isEmpty, slice } from "lodash";
 
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import Box from "@mui/material/Box";
@@ -34,6 +34,8 @@ import { Editor } from "react-draft-wysiwyg";
 import { convertToHTML } from "draft-convert";
 import DOMPurify from "dompurify";
 import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
+import { useAlbumContentsContext } from "../../hooks/useAlbumContentsContext";
+import AlbumContent from "../../components/AlbumContent";
 
 function AlbumWorkoutDetails() {
   const TEXTFIELD_STYLES = {
@@ -97,6 +99,8 @@ function AlbumWorkoutDetails() {
   const navigate = useNavigate();
   const { user } = useAuthContext();
   const { dispatchAlbumWorkoutContext } = useAlbumWorkoutsContext();
+  const { albumContents, dispatchAlbumContentContext } =
+    useAlbumContentsContext();
 
   const [albumWorkoutDetail, setAlbumWorkoutDetail] = useState();
   const [showDetails, setShowDetails] = useState(false);
@@ -118,10 +122,10 @@ function AlbumWorkoutDetails() {
   const [titleContent, setTitleContent] = useState("");
   const [descriptionContent, setDescriptionContent] = useState("");
   const [nameExercise, setNameExercise] = useState("");
-  const [setsExercise, setSetsExercise] = useState("");
-  const [repsExercise, setRepsExercise] = useState("");
+  const [setsExercise, setSetsExercise] = useState(0);
+  const [repsExercise, setRepsExercise] = useState(0);
   const [exerciseArray, setExerciseArray] = useState([]);
-  const [timeExercise, setTimeExercise] = useState("");
+  const [timeExercise, setTimeExercise] = useState(0);
   const [detailedInstructions, setDetailedInstructions] = useState("");
 
   useEffect(() => {
@@ -156,7 +160,6 @@ function AlbumWorkoutDetails() {
       });
       const json = await response.json();
       if (response.ok) {
-        console.log(json);
         setAlbumWorkoutDetail(json);
         if (!isEmpty(json.details)) {
           const contentState = convertFromRaw(json.details);
@@ -179,10 +182,35 @@ function AlbumWorkoutDetails() {
     }
   }, [params, user, dispatchAlbumWorkoutContext]);
 
-  // useEffect(() => {
-  //   let html = convertToHTML(editorState.getCurrentContent());
-  //   setConvertedContent(html);
-  // }, [editorState]);
+  useEffect(() => {
+    const fetchAlbumContents = async () => {
+      const response = await fetch(
+        `${API_ROOT}/v1/albumContent/${albumWorkoutDetail?._id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user?.token}`,
+          },
+        }
+      );
+      const json = await response.json();
+      if (response.ok) {
+        dispatchAlbumContentContext({
+          type: "SET_ALBUM_CONTENT",
+          payload: json,
+        });
+      }
+
+      if (!response.ok) {
+        toast.error("Something went wrong! Please refresh the page!");
+      }
+    };
+
+    if (user && albumWorkoutDetail) {
+      fetchAlbumContents();
+    }
+  }, [user, dispatchAlbumContentContext, albumWorkoutDetail]);
 
   useEffect(() => {
     const html = convertToHTML({
@@ -291,11 +319,48 @@ function AlbumWorkoutDetails() {
   };
 
   const handelCreateContent = async () => {
+    setIsLoading(true);
     if (exerciseArray?.length <= 0 || !titleContent || !descriptionContent) {
       toast.error("Please enter complete information before create!");
+      setIsLoading(false);
     } else {
-      console.log("Ok");
-      console.log(exerciseArray);
+      const albumContentData = {
+        albumContentName: titleContent,
+        description: descriptionContent,
+        exercises: exerciseArray,
+      };
+      const response = await fetch(
+        `${API_ROOT}/v1/albumContent/${albumWorkoutDetail?._id}`,
+        {
+          method: "POST",
+          body: JSON.stringify(albumContentData),
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user?.token}`,
+          },
+        }
+      );
+      const json = await response.json();
+      if (response.ok) {
+        setTitleContent("");
+        setDescriptionContent("");
+        setExerciseArray([]);
+        setOpenContentModal(false);
+        dispatchAlbumContentContext({
+          type: "CREATE_ALBUM_CONTENT",
+          payload: json[0],
+        });
+        setIsLoading(false);
+      }
+
+      if (!response.ok) {
+        toast.error(json.message);
+        setTitleContent("");
+        setDescriptionContent("");
+        setExerciseArray([]);
+        setOpenContentModal(false);
+        setIsLoading(false);
+      }
     }
   };
 
@@ -309,29 +374,57 @@ function AlbumWorkoutDetails() {
   const handleCreateExercise = async () => {
     if (
       !nameExercise ||
-      !setsExercise ||
-      !repsExercise ||
+      // !setsExercise ||
+      // !repsExercise ||
       !detailedInstructions
     ) {
+      console.log(repsExercise);
       toast.error("Please enter complete information before save!");
       return;
     } else {
+      let sets = setsExercise;
+      let reps = repsExercise;
+      let time = timeExercise;
+
+      if (
+        setsExercise.toString().length > 1 &&
+        setsExercise.toString()[0] === "0"
+      ) {
+        sets = setsExercise.toString().slice(1);
+      }
+
+      if (
+        repsExercise.toString().length > 1 &&
+        repsExercise.toString()[0] === "0"
+      ) {
+        reps = setsExercise.toString().slice(1);
+      }
+
+      if (
+        timeExercise.toString().length > 1 &&
+        timeExercise.toString()[0] === "0"
+      ) {
+        time = setsExercise.toString().slice(1);
+      }
       setExerciseArray((preState) => {
         return [
           ...preState,
           {
             nameExercise,
-            setsExercise,
-            repsExercise,
-            timeExercise,
+            // setsExercise,
+            // repsExercise,
+            // timeExercise,
+            setsExercise: sets,
+            repsExercise: reps,
+            timeExercise: time,
             detailedInstructions,
           },
         ];
       });
       setNameExercise("");
-      setSetsExercise("");
-      setRepsExercise("");
-      setTimeExercise("");
+      setSetsExercise(0);
+      setRepsExercise(0);
+      setTimeExercise(0);
       setDetailedInstructions("");
       setOpenExercisesModal(false);
     }
@@ -339,9 +432,9 @@ function AlbumWorkoutDetails() {
 
   const handleCancelCreateExercise = () => {
     setNameExercise("");
-    setSetsExercise("");
-    setRepsExercise("");
-    setTimeExercise("");
+    setSetsExercise(0);
+    setRepsExercise(0);
+    setTimeExercise(0);
     setDetailedInstructions("");
     setOpenExercisesModal(false);
   };
@@ -619,21 +712,25 @@ function AlbumWorkoutDetails() {
         ""
       )}
 
-      <Button
-        sx={{
-          textTransform: "none",
-          marginTop: "30px",
-          backgroundColor: "#10cd98",
-          color: "#fff",
-          "&:hover": {
-            backgroundColor: "rgb(17 122 93)",
-          },
-        }}
-        startIcon={<ArticleIcon />}
-        onClick={() => setOpenContentModal(true)}
-      >
-        Create content
-      </Button>
+      {albumWorkoutDetail?.userId === user?.userId ? (
+        <Button
+          sx={{
+            textTransform: "none",
+            marginTop: "30px",
+            backgroundColor: "#10cd98",
+            color: "#fff",
+            "&:hover": {
+              backgroundColor: "rgb(17 122 93)",
+            },
+          }}
+          startIcon={<ArticleIcon />}
+          onClick={() => setOpenContentModal(true)}
+        >
+          Create content
+        </Button>
+      ) : (
+        ""
+      )}
 
       <Modal
         open={openContentModal}
@@ -656,7 +753,7 @@ function AlbumWorkoutDetails() {
             onChange={(e) => setTitleContent(e.target.value)}
           />
 
-          <TextField
+          {/* <TextField
             id="outlined-basic"
             label="Description"
             variant="outlined"
@@ -665,7 +762,19 @@ function AlbumWorkoutDetails() {
             sx={TEXTFIELD_STYLES}
             value={descriptionContent}
             onChange={(e) => setDescriptionContent(e.target.value)}
-          />
+          /> */}
+          <Box
+            sx={{ marginTop: "20px", maxHeight: "150px", overflowY: "auto" }}
+          >
+            <TextareaAutosize
+              aria-label="Detailed instructions"
+              minRows={3}
+              placeholder="Please type detailed instructions here..."
+              value={descriptionContent}
+              onChange={(e) => setDescriptionContent(e.target.value)}
+              className={styles.detailedInstructions}
+            />
+          </Box>
           <Box
             sx={{
               maxHeight: "200px",
@@ -698,9 +807,10 @@ function AlbumWorkoutDetails() {
                         >
                           <Typography sx={{ color: "grey" }}>
                             {item.setsExercise} sets x {item.repsExercise} reps
-                            {item.timeExercise
+                            x {item.timeExercise}s
+                            {/* {item.timeExercise
                               ? ` x ${item.timeExercise}s`
-                              : ""}
+                              : ""} */}
                           </Typography>
                           <CancelIcon
                             sx={{
@@ -824,7 +934,7 @@ function AlbumWorkoutDetails() {
               <Typography variant="h6" sx={{ marginTop: "10px" }}>
                 Detailed instructions
               </Typography>
-              <Box sx={{ overflowY: "scroll", maxHeight: "100px" }}>
+              <Box sx={{ overflowY: "auto", maxHeight: "100px" }}>
                 <TextareaAutosize
                   aria-label="Detailed instructions"
                   minRows={3}
@@ -881,6 +991,26 @@ function AlbumWorkoutDetails() {
       ) : (
         ""
       )}
+      <Box
+        sx={{
+          display: "flex",
+          gap: "20px",
+          flexWrap: "wrap",
+          marginTop: "20px",
+        }}
+      >
+        {albumContents?.length > 0
+          ? albumContents?.map((item, index) => (
+              <>
+                <AlbumContent
+                  albumContent={item}
+                  userId={albumWorkoutDetail?.userId}
+                  key={index}
+                />
+              </>
+            ))
+          : ""}
+      </Box>
     </>
   );
 }

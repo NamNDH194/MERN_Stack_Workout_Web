@@ -26,7 +26,12 @@ import Modal from "@mui/material/Modal";
 import TextField from "@mui/material/TextField";
 import TextareaAutosize from "@mui/material/TextareaAutosize";
 import CancelIcon from "@mui/icons-material/Cancel";
-import { use } from "react";
+import Fade from "@mui/material/Fade";
+import Backdrop from "@mui/material/Backdrop";
+import CircularProgress from "@mui/material/CircularProgress";
+import Chip from "@mui/material/Chip";
+import AddIcon from "@mui/icons-material/Add";
+import { useNavigate } from "react-router-dom";
 
 function AlbumContent({ albumContent, userId }) {
   const ExpandMore = styled((props) => {
@@ -99,14 +104,30 @@ function AlbumContent({ albumContent, userId }) {
     p: 4,
   };
 
+  const styleModalDelete = {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: 400,
+    bgcolor: "background.paper",
+    border: "2px solid #000",
+    boxShadow: 24,
+    p: 4,
+  };
+
+  const navigate = useNavigate();
   const { user } = useAuthContext();
   const { dispatchAlbumContentContext } = useAlbumContentsContext();
   const [expanded, setExpanded] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const menuOpen = Boolean(anchorEl);
+  const [isLoading, setIsLoading] = useState(false);
   const [openModalUpdate, setOpenModalUpdate] = useState(false);
   const [openModalDelete, setOpenModalDelete] = useState(false);
   const [openModalUpdateExercise, setOpenModalUpdateExercise] = useState(false);
+  const [openModalDeleteExercise, setOpenModalDeleteExercise] = useState(false);
+  const [openAddExercisesModal, setOpenAddExercisesModal] = useState(false);
   const [albumContentName, setAlbumContentName] = useState(
     albumContent?.albumContentName
   );
@@ -117,6 +138,8 @@ function AlbumContent({ albumContent, userId }) {
   const [timeExercise, setTimeExercise] = useState(0);
   const [detailedInstructions, setDetailedInstructions] = useState("");
   const [indexExerciseUpdate, setIndexExerciseUpdate] = useState("");
+  const [exerciseIdUpdateCurrent, setExerciseIdUpdateCurrent] = useState("");
+  const [exerciseId, setExerciseId] = useState("");
 
   const handleExpandClick = () => {
     setExpanded(!expanded);
@@ -130,6 +153,7 @@ function AlbumContent({ albumContent, userId }) {
   }, [albumContent]);
 
   const handleUpdateAlbumContentInfor = async () => {
+    setIsLoading(true);
     const response = await fetch(
       `${API_ROOT}/v1/albumContent/${albumContent?._id}`,
       {
@@ -149,14 +173,44 @@ function AlbumContent({ albumContent, userId }) {
         payload: json[0],
       });
       toast.success("Update album content infor successfully!");
+      setIsLoading(false);
     }
 
     if (!response.ok) {
       toast.error(json.message);
+      setIsLoading(false);
     }
-    console.log(albumContentName);
-    console.log(description);
-    console.log(albumContent);
+  };
+
+  const handleDeleteAlbumContent = async () => {
+    setIsLoading(true);
+    const response = await fetch(
+      `${API_ROOT}/v1/albumContent/${albumContent?._id}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user?.token}`,
+        },
+      }
+    );
+
+    const json = await response.json();
+
+    if (response.ok) {
+      dispatchAlbumContentContext({
+        type: "DELETE_CONTENT",
+        payload: { _id: json._id },
+      });
+      toast.success("Delete content successfully!");
+      setOpenModalDelete(false);
+      setIsLoading(false);
+    }
+
+    if (!response.ok) {
+      toast.error("Something went wrong! Please try again!");
+      setIsLoading(false);
+    }
   };
 
   const handleCloseUpdateModal = () => {
@@ -165,9 +219,8 @@ function AlbumContent({ albumContent, userId }) {
     setOpenModalUpdate(false);
   };
 
-  const handleUpdateExercise = () => {};
-
   const handleOpenModalUpdateExercise = (exercise, index) => {
+    setExerciseIdUpdateCurrent(exercise._id);
     setIndexExerciseUpdate(index);
     setExerciseName(exercise.nameExercise);
     setSetsExercise(exercise.setsExercise);
@@ -177,7 +230,56 @@ function AlbumContent({ albumContent, userId }) {
     setOpenModalUpdateExercise(true);
   };
 
+  const handleUpdateExercise = async () => {
+    setIsLoading(true);
+    const data = {
+      albumContentId: albumContent?._id,
+      nameExercise: exerciseName,
+      setsExercise: setsExercise,
+      repsExercise: repsExercise,
+      timeExercise: timeExercise,
+      detailedInstructions: detailedInstructions,
+    };
+    const response = await fetch(
+      `${API_ROOT}/v1/albumExercise/${exerciseIdUpdateCurrent}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user?.token}`,
+        },
+      }
+    );
+
+    const json = await response.json();
+
+    if (response.ok) {
+      dispatchAlbumContentContext({
+        type: "UPDATE_ALBUM_CONTENT",
+        payload: json[0],
+      });
+      setExerciseIdUpdateCurrent("");
+      setIndexExerciseUpdate("");
+      setExerciseName("");
+      setSetsExercise(0);
+      setRepsExercise(0);
+      setTimeExercise(0);
+      setDetailedInstructions("");
+      setOpenModalUpdateExercise(false);
+      toast.success("Update exercise successfully!");
+      setIsLoading(false);
+    }
+
+    if (!response.ok) {
+      console.log(json.message);
+      toast.error(json.message);
+      setIsLoading(false);
+    }
+  };
+
   const handleCancelUpdateExercise = () => {
+    setExerciseIdUpdateCurrent("");
     setIndexExerciseUpdate("");
     setExerciseName("");
     setSetsExercise(0);
@@ -185,6 +287,128 @@ function AlbumContent({ albumContent, userId }) {
     setTimeExercise(0);
     setDetailedInstructions("");
     setOpenModalUpdateExercise(false);
+  };
+
+  const handleDeleteExercise = async () => {
+    setIsLoading(true);
+    const response = await fetch(`${API_ROOT}/v1/albumExercise/${exerciseId}`, {
+      method: "DELETE",
+      body: JSON.stringify({ albumContentId: albumContent?._id }),
+      headers: {
+        "Content-type": "application/json",
+        Authorization: `Bearer ${user?.token}`,
+      },
+    });
+
+    const json = await response.json();
+
+    if (response.ok) {
+      dispatchAlbumContentContext({
+        type: "UPDATE_ALBUM_CONTENT",
+        payload: json[0],
+      });
+      toast.success("Delete exercise successfully!");
+      setOpenModalDeleteExercise(false);
+      setIsLoading(false);
+    }
+
+    if (!response.ok) {
+      toast.error("Something went wrong! Please try again!");
+      setOpenModalDeleteExercise(false);
+      setIsLoading(false);
+    }
+  };
+
+  const handleAddExercise = async () => {
+    setIsLoading(true);
+    if (
+      !exerciseName ||
+      // !setsExercise ||
+      // !repsExercise ||
+      !detailedInstructions
+    ) {
+      console.log(repsExercise);
+      toast.error("Please enter complete information before save!");
+      setIsLoading(false);
+      return;
+    } else {
+      let sets = setsExercise;
+      let reps = repsExercise;
+      let time = timeExercise;
+
+      if (
+        setsExercise.toString().length > 1 &&
+        setsExercise.toString()[0] === "0"
+      ) {
+        sets = setsExercise.toString().slice(1);
+        sets = +sets;
+      }
+
+      if (
+        repsExercise.toString().length > 1 &&
+        repsExercise.toString()[0] === "0"
+      ) {
+        reps = repsExercise.toString().slice(1);
+        reps = +reps;
+      }
+
+      if (
+        timeExercise.toString().length > 1 &&
+        timeExercise.toString()[0] === "0"
+      ) {
+        time = timeExercise.toString().slice(1);
+        time = +time;
+      }
+
+      const data = {
+        albumContentId: albumContent?._id,
+        nameExercise: exerciseName,
+        setsExercise: sets,
+        repsExercise: reps,
+        timeExercise: time,
+        detailedInstructions: detailedInstructions,
+      };
+
+      const response = await fetch(`${API_ROOT}/v1/albumExercise/`, {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user?.token}`,
+        },
+      });
+
+      const json = await response.json();
+
+      if (response.ok) {
+        dispatchAlbumContentContext({
+          type: "UPDATE_ALBUM_CONTENT",
+          payload: json[0],
+        });
+        toast.success("Add exercise successfully!");
+        setExerciseName("");
+        setSetsExercise(0);
+        setRepsExercise(0);
+        setTimeExercise(0);
+        setDetailedInstructions("");
+        setOpenAddExercisesModal(false);
+        setIsLoading(false);
+      }
+
+      if (!response.ok) {
+        toast.error(json.message);
+        setIsLoading(false);
+      }
+    }
+  };
+
+  const handleCancelAddExercise = () => {
+    setExerciseName("");
+    setSetsExercise(0);
+    setRepsExercise(0);
+    setTimeExercise(0);
+    setDetailedInstructions("");
+    setOpenAddExercisesModal(false);
   };
 
   return (
@@ -319,9 +543,15 @@ function AlbumContent({ albumContent, userId }) {
                   description !== albumContent?.description ? (
                     <Button
                       sx={BUTTON_STYLES}
-                      onClick={handleUpdateAlbumContentInfor}
+                      onClick={
+                        isLoading ? () => {} : handleUpdateAlbumContentInfor
+                      }
                     >
-                      Save
+                      {isLoading ? (
+                        <CircularProgress size="18px" sx={{ color: "#fff" }} />
+                      ) : (
+                        "Save"
+                      )}
                     </Button>
                   ) : (
                     <Button sx={BUTTON_STYLES} disabled>
@@ -338,6 +568,137 @@ function AlbumContent({ albumContent, userId }) {
                     Exercises infor
                   </Typography>
                   <Divider sx={{ borderTop: "1px dashed #000" }} />
+                  <Box
+                    sx={{
+                      width: "fit-content",
+                      position: "relative",
+                      left: "calc(100% - 130px)",
+                    }}
+                  >
+                    <Chip
+                      icon={<AddIcon />}
+                      label="Add exercises"
+                      clickable
+                      onClick={() => setOpenAddExercisesModal(true)}
+                      sx={{ marginTop: "20px" }}
+                    />
+
+                    <Modal
+                      open={openAddExercisesModal}
+                      aria-labelledby="modal-modal-title"
+                      aria-describedby="modal-modal-description"
+                    >
+                      <Box sx={styleModalUpdateContent}>
+                        <Typography
+                          id="modal-modal-title"
+                          variant="h4"
+                          component="h2"
+                        >
+                          Add Exercise
+                        </Typography>
+                        <TextField
+                          id="outlined-basic"
+                          label="Name"
+                          variant="outlined"
+                          placeholder="Enter exercise name..."
+                          fullWidth
+                          type="text"
+                          sx={TEXTFIELD_STYLES}
+                          value={exerciseName}
+                          onChange={(e) => setExerciseName(e.target.value)}
+                        />
+
+                        <TextField
+                          id="outlined-basic"
+                          label="Sets"
+                          variant="outlined"
+                          placeholder="Enter number of sets..."
+                          type="number"
+                          fullWidth
+                          sx={TEXTFIELD_STYLES}
+                          value={setsExercise}
+                          onChange={(e) =>
+                            e.target.value >= 0 &&
+                            setSetsExercise(e.target.value)
+                          }
+                        />
+                        <TextField
+                          id="outlined-basic"
+                          label="Reps"
+                          variant="outlined"
+                          placeholder="Enter number of reps..."
+                          type="number"
+                          fullWidth
+                          sx={TEXTFIELD_STYLES}
+                          value={repsExercise}
+                          onChange={(e) =>
+                            e.target.value >= 0 &&
+                            setRepsExercise(e.target.value)
+                          }
+                        />
+                        <TextField
+                          id="outlined-basic"
+                          label="Time (Optional)"
+                          variant="outlined"
+                          placeholder="Enter limit time in seconds..."
+                          type="number"
+                          fullWidth
+                          sx={TEXTFIELD_STYLES}
+                          value={timeExercise}
+                          onChange={(e) =>
+                            e.target.value >= 0 &&
+                            setTimeExercise(e.target.value)
+                          }
+                        />
+                        <Typography variant="h6" sx={{ marginTop: "10px" }}>
+                          Detailed instructions
+                        </Typography>
+                        <Box sx={{ overflowY: "auto", maxHeight: "100px" }}>
+                          <TextareaAutosize
+                            aria-label="Detailed instructions"
+                            minRows={3}
+                            placeholder="Please type detailed instructions here..."
+                            value={detailedInstructions}
+                            onChange={(e) =>
+                              setDetailedInstructions(e.target.value)
+                            }
+                            className={styles.detailedInstructions}
+                          />
+                        </Box>
+                        <Box
+                          sx={{
+                            marginTop: "20px",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "10px",
+                            position: "relative",
+                            width: "fit-content",
+                            left: "calc(100% - 140px)",
+                          }}
+                        >
+                          <Button
+                            sx={BUTTON_STYLES}
+                            onClick={isLoading ? () => {} : handleAddExercise}
+                          >
+                            {isLoading ? (
+                              <CircularProgress
+                                size="18px"
+                                sx={{ color: "#fff" }}
+                              />
+                            ) : (
+                              "Save"
+                            )}
+                          </Button>
+                          <Button
+                            sx={BUTTON_STYLES}
+                            onClick={handleCancelAddExercise}
+                          >
+                            Cancel
+                          </Button>
+                        </Box>
+                      </Box>
+                    </Modal>
+                  </Box>
                   <Box>
                     {albumContent?.exercises?.map((item, index) => (
                       <Box
@@ -395,6 +756,10 @@ function AlbumContent({ albumContent, userId }) {
                             sx={BUTTON_STYLES}
                             startIcon={<DeleteForeverIcon />}
                             size="small"
+                            onClick={() => {
+                              setExerciseId(item?._id);
+                              setOpenModalDeleteExercise(true);
+                            }}
                           >
                             Remove
                           </Button>
@@ -508,9 +873,18 @@ function AlbumContent({ albumContent, userId }) {
                                 ]?.detailedInstructions.toString() ? (
                                 <Button
                                   sx={BUTTON_STYLES}
-                                  onClick={handleUpdateExercise}
+                                  onClick={
+                                    isLoading ? () => {} : handleUpdateExercise
+                                  }
                                 >
-                                  Save
+                                  {isLoading ? (
+                                    <CircularProgress
+                                      size="18px"
+                                      sx={{ color: "#fff" }}
+                                    />
+                                  ) : (
+                                    "Save"
+                                  )}
                                 </Button>
                               ) : (
                                 <Button sx={BUTTON_STYLES} disabled>
@@ -526,10 +900,141 @@ function AlbumContent({ albumContent, userId }) {
                             </Box>
                           </Box>
                         </Modal>
+
+                        <Modal
+                          aria-labelledby="transition-modal-title"
+                          aria-describedby="transition-modal-description"
+                          open={openModalDeleteExercise}
+                          onClose={() => setOpenModalDeleteExercise(false)}
+                          closeAfterTransition
+                          slots={{ backdrop: Backdrop }}
+                          slotProps={{
+                            backdrop: {
+                              timeout: 500,
+                            },
+                          }}
+                        >
+                          <Fade in={openModalDeleteExercise}>
+                            <Box sx={styleModalDelete}>
+                              <Typography
+                                id="transition-modal-title"
+                                variant="h6"
+                                component="h2"
+                              >
+                                Delete exercise ?
+                              </Typography>
+                              <Box
+                                id="transition-modal-description"
+                                sx={{ mt: 2 }}
+                              >
+                                <p>
+                                  This action will delete all informations in
+                                  this record! Are you sure about this ?
+                                </p>
+                                <Box
+                                  sx={{
+                                    display: "flex",
+                                    justifyContent: "flex-end",
+                                    gap: "10px",
+                                  }}
+                                >
+                                  <Button
+                                    onClick={
+                                      isLoading
+                                        ? () => {}
+                                        : handleDeleteExercise
+                                    }
+                                    sx={BUTTON_STYLES}
+                                  >
+                                    {isLoading ? (
+                                      <CircularProgress
+                                        size="18px"
+                                        sx={{ color: "#fff" }}
+                                      />
+                                    ) : (
+                                      "Confirm"
+                                    )}
+                                  </Button>
+
+                                  <Button
+                                    onClick={() =>
+                                      setOpenModalDeleteExercise(false)
+                                    }
+                                    sx={BUTTON_STYLES}
+                                  >
+                                    Cancel
+                                  </Button>
+                                </Box>
+                              </Box>
+                            </Box>
+                          </Fade>
+                        </Modal>
                       </Box>
                     ))}
                   </Box>
                 </Box>
+              </Modal>
+
+              <Modal
+                aria-labelledby="transition-modal-title"
+                aria-describedby="transition-modal-description"
+                open={openModalDelete}
+                onClose={() => setOpenModalDelete(false)}
+                closeAfterTransition
+                slots={{ backdrop: Backdrop }}
+                slotProps={{
+                  backdrop: {
+                    timeout: 500,
+                  },
+                }}
+              >
+                <Fade in={openModalDelete}>
+                  <Box sx={styleModalDelete}>
+                    <Typography
+                      id="transition-modal-title"
+                      variant="h6"
+                      component="h2"
+                    >
+                      Delete content ?
+                    </Typography>
+                    <Box id="transition-modal-description" sx={{ mt: 2 }}>
+                      <p>
+                        This action will delete all informations in this record!
+                        Are you sure about this ?
+                      </p>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "flex-end",
+                          gap: "10px",
+                        }}
+                      >
+                        <Button
+                          onClick={
+                            isLoading ? () => {} : handleDeleteAlbumContent
+                          }
+                          sx={BUTTON_STYLES}
+                        >
+                          {isLoading ? (
+                            <CircularProgress
+                              size="18px"
+                              sx={{ color: "#fff" }}
+                            />
+                          ) : (
+                            "Confirm"
+                          )}
+                        </Button>
+
+                        <Button
+                          onClick={() => setOpenModalDelete(false)}
+                          sx={BUTTON_STYLES}
+                        >
+                          Cancel
+                        </Button>
+                      </Box>
+                    </Box>
+                  </Box>
+                </Fade>
               </Modal>
             </>
           ) : (
@@ -552,7 +1057,16 @@ function AlbumContent({ albumContent, userId }) {
         </Typography>
       </CardContent>
       <CardActions disableSpacing>
-        <Button sx={BUTTON_STYLES}>Start Workout</Button>
+        <Button
+          sx={BUTTON_STYLES}
+          onClick={() => {
+            navigate(`/start_workout/${albumContent?._id}`, {
+              state: albumContent?.albumWorkoutId,
+            });
+          }}
+        >
+          Start Workout
+        </Button>
         <ExpandMore
           expand={expanded}
           onClick={handleExpandClick}

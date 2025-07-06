@@ -5,7 +5,7 @@ import { useAuthContext } from "../../hooks/useAuthContext";
 import { useAlbumWorkoutsContext } from "../../hooks/useAlbumWorkoutsContext";
 import { toast } from "react-toastify";
 import styles from "./AlbumWorkoutDetails.module.css";
-import { isEmpty, slice } from "lodash";
+import { isEmpty } from "lodash";
 
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import Box from "@mui/material/Box";
@@ -397,14 +397,14 @@ function AlbumWorkoutDetails() {
         repsExercise.toString().length > 1 &&
         repsExercise.toString()[0] === "0"
       ) {
-        reps = setsExercise.toString().slice(1);
+        reps = repsExercise.toString().slice(1);
       }
 
       if (
         timeExercise.toString().length > 1 &&
         timeExercise.toString()[0] === "0"
       ) {
-        time = setsExercise.toString().slice(1);
+        time = timeExercise.toString().slice(1);
       }
       setExerciseArray((preState) => {
         return [

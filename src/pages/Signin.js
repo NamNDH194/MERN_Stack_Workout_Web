@@ -3,6 +3,7 @@ import { API_ROOT } from "../ultilities/constants";
 import { toast } from "react-toastify";
 import { useAuthContext } from "../hooks/useAuthContext";
 import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 
 function Signin() {
   const [email, setEmail] = useState("");
@@ -25,8 +26,14 @@ function Signin() {
       toast.error(json.message);
     }
     if (response.ok) {
+      const user = { ...json };
+
+      const decoded = jwtDecode(user?.token);
+      user.userId = decoded._id;
+
       localStorage.setItem("user", JSON.stringify(json));
-      dispatch({ type: "LOGIN", payload: json });
+
+      dispatch({ type: "LOGIN", payload: user });
       navigate("/");
     }
   };

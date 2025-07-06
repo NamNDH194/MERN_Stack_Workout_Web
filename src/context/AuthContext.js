@@ -1,5 +1,6 @@
 import { createContext, useEffect, useReducer } from "react";
 import { useWorkoutsContext } from "../hooks/useWorkoutsContext";
+import { jwtDecode } from "jwt-decode";
 
 export const AuthContext = createContext();
 
@@ -20,8 +21,11 @@ export const AuthContextProvider = ({ children }) => {
   });
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (user) {
+    const data = JSON.parse(localStorage.getItem("user"));
+    if (data) {
+      const user = { ...data };
+      const decoded = jwtDecode(user?.token);
+      user.userId = decoded._id;
       dispatch({ type: "LOGIN", payload: user });
     }
   }, []);

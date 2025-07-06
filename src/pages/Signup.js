@@ -3,6 +3,7 @@ import { toast } from "react-toastify";
 import { API_ROOT } from "../ultilities/constants";
 import { useAuthContext } from "../hooks/useAuthContext";
 import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 
 function Signup() {
   const [userName, setUserName] = useState("");
@@ -32,8 +33,17 @@ function Signup() {
         toast.error(json.message);
       }
       if (response.ok) {
+        // localStorage.setItem("user", JSON.stringify(json));
+        // dispatch({ type: "LOGIN", payload: json });
+
+        const user = { ...json };
+
+        const decoded = jwtDecode(user?.token);
+        user.userId = decoded._id;
+
         localStorage.setItem("user", JSON.stringify(json));
-        dispatch({ type: "LOGIN", payload: json });
+
+        dispatch({ type: "LOGIN", payload: user });
         navigate("/");
       }
     }

@@ -1,0 +1,59 @@
+.tableResult {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.tdResult,
+.thResult {
+  text-align: center;
+  padding: 15px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgb(171, 168, 168);
+  color: #000;
+}
+
+.thResult {
+  background-color: #1aac83;
+  color: #fff;
+}
+
+.trResult:hover {
+  background-color: rgb(219, 216, 216);
+}
+
+.tdResult {
+  position: relative;
+  &:hover {
+    &:before {
+      content: "";
+      background-color: rgb(219, 216, 216);
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: -9999px;
+      bottom: -9999px;
+      z-index: -1;
+    }
+  }
+}
+
+.squareGreen {
+  width: 30px;
+  height: 30px;
+  background-color: green;
+}
+
+.squareRed {
+  width: 30px;
+  height: 30px;
+  background-color: red;
+}
+
+.squareBlue {
+  width: 30px;
+  height: 30px;
+  background-color: blue;
+}

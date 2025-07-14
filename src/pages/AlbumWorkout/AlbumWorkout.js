@@ -260,6 +260,8 @@ function AlbumWorkout() {
         sx={{
           display: "flex",
           justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: "20px",
           alignItems: "center",
         }}
       >
@@ -584,12 +586,13 @@ function AlbumWorkout() {
       {albumWorkoutDataDisplay ? (
         // albumWorkouts?.length > 0 ? (
         albumWorkoutDataDisplay?.length > 0 ? (
-          <Box
-            sx={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "20px",
-            }}
+          <div
+            // sx={{
+            //   display: "flex",
+            //   flexWrap: "wrap",
+            //   gap: "20px",
+            // }}
+            className={styles.albumWorkouts}
           >
             {/* {albumWorkouts?.map( */}
             {albumWorkoutDataDisplay?.map(
@@ -601,7 +604,7 @@ function AlbumWorkout() {
                   />
                 )
             )}
-          </Box>
+          </div>
         ) : (
           <p>There are no album workouts here!</p>
         )

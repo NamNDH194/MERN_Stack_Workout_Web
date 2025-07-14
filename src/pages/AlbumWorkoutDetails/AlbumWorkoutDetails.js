@@ -117,6 +117,7 @@ function AlbumWorkoutDetails() {
   const menuOpen = Boolean(anchorEl);
   const [isUpdate, setIsUpdate] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingPage, setIsLoadingPage] = useState(false);
   const [openContentModal, setOpenContentModal] = useState(false);
   const [openExercisesModal, setOpenExercisesModal] = useState(false);
   const [titleContent, setTitleContent] = useState("");
@@ -172,11 +173,13 @@ function AlbumWorkoutDetails() {
       if (!response.ok) {
         setIsError(true);
         toast.error("Something went wrong! Please try again!");
+        setIsLoadingPage(false);
       }
     };
     if (user) {
-      fetchAlbumWorkout();
+      setIsLoadingPage(true);
       fetchAlbumWorkouts();
+      fetchAlbumWorkout();
     } else {
       toast.error("Something went wrong! Please try again!");
     }
@@ -200,14 +203,17 @@ function AlbumWorkoutDetails() {
           type: "SET_ALBUM_CONTENT",
           payload: json,
         });
+        setIsLoadingPage(false);
       }
 
       if (!response.ok) {
         toast.error("Something went wrong! Please refresh the page!");
+        setIsLoadingPage(false);
       }
     };
 
     if (user && albumWorkoutDetail) {
+      setIsLoadingPage(true);
       fetchAlbumContents();
     }
   }, [user, dispatchAlbumContentContext, albumWorkoutDetail]);
@@ -378,7 +384,6 @@ function AlbumWorkoutDetails() {
       // !repsExercise ||
       !detailedInstructions
     ) {
-      console.log(repsExercise);
       toast.error("Please enter complete information before save!");
       return;
     } else {
@@ -450,7 +455,10 @@ function AlbumWorkoutDetails() {
             color: "rgb(17 122 93)",
           },
         }}
-        onClick={() => navigate("/public_album_workouts")}
+        onClick={() => {
+          setAlbumWorkoutDetail();
+          navigate("/public_album_workouts");
+        }}
       />
 
       {albumWorkoutDetail && !isError ? (
@@ -999,8 +1007,26 @@ function AlbumWorkoutDetails() {
           marginTop: "20px",
         }}
       >
-        {albumContents?.length > 0
-          ? albumContents?.map((item, index) => (
+        {isLoadingPage ? (
+          <Box
+            sx={{
+              marginTop: "30px",
+              width: "fit-content",
+              margin: "auto",
+            }}
+          >
+            <CircularProgress />
+          </Box>
+        ) : albumContents?.length > 0 ? (
+          <div
+            // sx={{
+            //   display: "flex",
+            //   flexWrap: "wrap",
+            //   gap: "20px",
+            // }}
+            className={styles.albumContents}
+          >
+            {albumContents?.map((item, index) => (
               <>
                 <AlbumContent
                   albumContent={item}
@@ -1008,8 +1034,11 @@ function AlbumWorkoutDetails() {
                   key={index}
                 />
               </>
-            ))
-          : ""}
+            ))}
+          </div>
+        ) : (
+          ""
+        )}
       </Box>
     </>
   );

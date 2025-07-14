@@ -272,7 +272,6 @@ function AlbumContent({ albumContent, userId }) {
     }
 
     if (!response.ok) {
-      console.log(json.message);
       toast.error(json.message);
       setIsLoading(false);
     }
@@ -327,7 +326,6 @@ function AlbumContent({ albumContent, userId }) {
       // !repsExercise ||
       !detailedInstructions
     ) {
-      console.log(repsExercise);
       toast.error("Please enter complete information before save!");
       setIsLoading(false);
       return;
@@ -1061,7 +1059,7 @@ function AlbumContent({ albumContent, userId }) {
           sx={BUTTON_STYLES}
           onClick={() => {
             navigate(`/start_workout/${albumContent?._id}`, {
-              state: albumContent?.albumWorkoutId,
+              state: albumContent,
             });
           }}
         >

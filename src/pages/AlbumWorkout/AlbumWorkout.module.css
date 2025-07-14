@@ -8,3 +8,15 @@
   border-radius: 4px;
   outline: none;
 }
+
+.albumWorkouts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+@media screen and (max-width: 830px) {
+  .albumWorkouts {
+    justify-content: center;
+  }
+}

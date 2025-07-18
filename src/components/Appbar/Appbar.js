@@ -5,7 +5,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import LibraryBooksIcon from "@mui/icons-material/LibraryBooks";
-import AccessAlarmIcon from "@mui/icons-material/AccessAlarm";
+import BookmarksIcon from "@mui/icons-material/Bookmarks";
 import { useNavigate } from "react-router-dom";
 
 function Appbar() {
@@ -104,7 +104,7 @@ function Appbar() {
         onClick={() => navigate("/clock")}
       >
         <Typography sx={{ display: "flex", alignItems: "center", gap: "5px" }}>
-          <AccessAlarmIcon /> Clock
+          <BookmarksIcon /> Storage
         </Typography>
         <div className={styles.underBar}></div>
       </Box>

@@ -344,8 +344,13 @@ function StartWorkout() {
               fontSize: "50px",
               color: "#10cd98",
               cursor: "pointer",
+              border: "1px solid #10cd98",
+              borderRadius: "50%",
+              transition: "scale 0.5s ease",
               "&:hover": {
                 color: "rgb(17 122 93)",
+                borderColor: "rgb(17 122 93)",
+                scale: "1.1",
               },
             }}
             onClick={() => {
@@ -362,12 +367,12 @@ function StartWorkout() {
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
+                  justifyContent: "center",
                   gap: "20px",
                   position: "absolute",
                   top: "10%",
                   left: "50%",
                   transform: "translate(-50%)",
-                  overflowX: "auto",
                 }}
               >
                 <Box>
@@ -487,6 +492,29 @@ function StartWorkout() {
                     })}
                   </tbody>
                 </table>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "20px",
+                    width: "100%",
+                  }}
+                >
+                  <img
+                    src={`${process.env.PUBLIC_URL}/assets/images/left_arm.png`}
+                    alt="gym_image"
+                    style={{ width: "100px", height: "100px" }}
+                  />
+                  <Typography sx={{ textAlign: "center", color: "green" }}>
+                    IT NEVER GETS EASIER, YOU JUST GET STRONGER
+                  </Typography>
+                  <img
+                    src={`${process.env.PUBLIC_URL}/assets/images/right_arm.png`}
+                    alt="gym_image"
+                    style={{ width: "100px", height: "100px" }}
+                  />
+                </Box>
               </Box>
             ) : (
               <Box

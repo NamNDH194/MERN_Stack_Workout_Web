@@ -6,17 +6,20 @@ import { WorkoutsContextProvider } from "./context/WorkoutContext";
 import { AuthContextProvider } from "./context/AuthContext";
 import { AlbumWorkoutContextProvider } from "./context/AlbumWorkoutContext";
 import { AlbumContentContextProvider } from "./context/AlbumContentContext";
+import { AlbumStorageContextProvider } from "./context/AlbumStorageContext";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   // <React.StrictMode>
   <AuthContextProvider>
     <AlbumWorkoutContextProvider>
-      <AlbumContentContextProvider>
-        <WorkoutsContextProvider>
-          <App />
-        </WorkoutsContextProvider>
-      </AlbumContentContextProvider>
+      <AlbumStorageContextProvider>
+        <AlbumContentContextProvider>
+          <WorkoutsContextProvider>
+            <App />
+          </WorkoutsContextProvider>
+        </AlbumContentContextProvider>
+      </AlbumStorageContextProvider>
     </AlbumWorkoutContextProvider>
   </AuthContextProvider>
   // </React.StrictMode>

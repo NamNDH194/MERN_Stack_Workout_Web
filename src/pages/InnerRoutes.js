@@ -4,7 +4,7 @@ import Navbar from "../components/Navbar";
 import Appbar from "../components/Appbar/Appbar";
 import { useAuthContext } from "../hooks/useAuthContext";
 import AlbumWorkout from "./AlbumWorkout/AlbumWorkout";
-import Clock from "./Clock";
+import Storage from "./Storage";
 import Home from "./Home";
 import Auth from "./Auth";
 import Page404 from "./Page404";
@@ -77,7 +77,7 @@ function InnerRoutes() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/public_album_workouts" element={<AlbumWorkout />} />
-              <Route path="/clock" element={<Clock />} />
+              <Route path="/clock" element={<Storage />} />
               <Route
                 path="/album_workouts_detail/:id"
                 element={<AlbumWorkoutDetails />}

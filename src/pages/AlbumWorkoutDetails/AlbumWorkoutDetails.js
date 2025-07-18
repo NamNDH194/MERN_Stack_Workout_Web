@@ -451,8 +451,13 @@ function AlbumWorkoutDetails() {
           fontSize: "50px",
           color: "#10cd98",
           cursor: "pointer",
+          border: "1px solid #10cd98",
+          borderRadius: "50%",
+          transition: "scale 0.5s ease",
           "&:hover": {
             color: "rgb(17 122 93)",
+            borderColor: "rgb(17 122 93)",
+            scale: "1.1",
           },
         }}
         onClick={() => {

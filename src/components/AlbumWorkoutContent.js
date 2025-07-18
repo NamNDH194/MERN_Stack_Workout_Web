@@ -44,6 +44,8 @@ import TextField from "@mui/material/TextField";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import CancelIcon from "@mui/icons-material/Cancel";
+import BookmarkRemoveIcon from "@mui/icons-material/BookmarkRemove";
+import { useAlbumStoragesContext } from "../hooks/useAlbumStoragesContext";
 
 function AlbumWorkoutContent({ albumWorkout }) {
   const { user } = useAuthContext();
@@ -58,11 +60,13 @@ function AlbumWorkoutContent({ albumWorkout }) {
   const [openModalUpdate, setOpenModalUpdate] = useState(false);
   const [openModalDelete, setOpenModalDelete] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
   const [openDialogLikeUsers, setOpenDialogLikeUsers] = useState(false);
 
   const navigate = useNavigate();
 
   const { dispatchAlbumWorkoutContext } = useAlbumWorkoutsContext();
+  const { dispatchAlbumStorageContext } = useAlbumStoragesContext();
 
   const styleModalUpdateAlbum = {
     position: "absolute",
@@ -102,13 +106,52 @@ function AlbumWorkoutContent({ albumWorkout }) {
 
   useEffect(() => {
     if (albumWorkout) {
-      albumWorkout.likedUsers.forEach((item) => {
+      albumWorkout?.likedUsers?.forEach((item) => {
         if (item._id.includes(user?.userId)) {
           setIsLiked(true);
         }
       });
+      albumWorkout?.storedUsers?.forEach((item) => {
+        if (item._id.includes(user?.userId)) {
+          setIsSaved(true);
+        }
+      });
     }
   }, [albumWorkout, user]);
+
+  useEffect(() => {
+    const fetchAlbumStorages = async () => {
+      const response = await fetch(`${API_ROOT}/v1/albumStorage/`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user?.token}`,
+        },
+      });
+
+      const json = await response.json();
+
+      if (response.ok) {
+        dispatchAlbumStorageContext({
+          type: "SET_ALBUM_STORAGE",
+          payload: json,
+        });
+        setIsLoading(false);
+      }
+
+      if (!response.ok) {
+        toast.error("Something went wrong! Please try again!");
+        setIsLoading(false);
+      }
+    };
+
+    if (user) {
+      setIsLoading(true);
+      fetchAlbumStorages();
+    } else {
+      toast.error("Something went wrong! Please try again!");
+    }
+  }, [dispatchAlbumStorageContext, user]);
 
   const handleCloseMenu = () => {
     setAnchorEl(null);
@@ -339,7 +382,33 @@ function AlbumWorkoutContent({ albumWorkout }) {
   };
 
   const handleSaveAlbum = async () => {
-    console.log("Save album");
+    const response = await fetch(
+      `${API_ROOT}/v1/albumStorage/${albumWorkout._id}`,
+      {
+        method: "POST",
+        body: isSaved
+          ? JSON.stringify({ isSave: false })
+          : JSON.stringify({ isSave: true }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user?.token}`,
+        },
+      }
+    );
+    const json = await response.json();
+    if (response.ok) {
+      dispatchAlbumWorkoutContext({
+        type: "UPDATE_ALBUM_WORKOUT",
+        payload: json,
+      });
+      isSaved
+        ? toast.success("Remove album from storage successfully!")
+        : toast.success("Save album to storage successfully!");
+      setIsSaved(!isSaved);
+    }
+    if (!response.ok) {
+      toast.error("Something went wrong! please try again!");
+    }
   };
 
   return (
@@ -880,15 +949,27 @@ function AlbumWorkoutContent({ albumWorkout }) {
             </Dialog>
           </Box>
 
-          <Tooltip title="Save to storage">
-            <IconButton
-              aria-label="share"
-              onClick={handleSaveAlbum}
-              sx={{ marginLeft: "10px" }}
-            >
-              <BookmarkIcon aria-label="add to store" />
-            </IconButton>
-          </Tooltip>
+          {isSaved ? (
+            <Tooltip title="Remove album from storage">
+              <IconButton
+                aria-label="share"
+                onClick={handleSaveAlbum}
+                sx={{ marginLeft: "10px" }}
+              >
+                <BookmarkRemoveIcon />
+              </IconButton>
+            </Tooltip>
+          ) : (
+            <Tooltip title="Save to storage">
+              <IconButton
+                aria-label="share"
+                onClick={handleSaveAlbum}
+                sx={{ marginLeft: "10px" }}
+              >
+                <BookmarkIcon aria-label="add to store" />
+              </IconButton>
+            </Tooltip>
+          )}
         </Box>
         <Button
           sx={{

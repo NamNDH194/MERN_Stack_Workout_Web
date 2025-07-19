@@ -26,7 +26,7 @@ function InnerRoutes() {
   const knownPatterns = [
     /^\/$/,
     /^\/login\/?$/,
-    /^\/clock\/?$/,
+    /^\/storage\/?$/,
     /^\/public_album_workouts\/?$/,
     /^\/album_workouts_detail\/[^/]+\/?$/,
     /^\/start_workout\/[^/]+\/?$/,
@@ -59,11 +59,12 @@ function InnerRoutes() {
 
   return (
     <>
-      {!albumWorkoutDetailsPage && !startWorkoutPage && !page404 ? (
+      {/* {!albumWorkoutDetailsPage && !startWorkoutPage && !page404 ? (
         <Navbar />
       ) : (
         ""
-      )}
+      )} */}
+      <Navbar />
 
       {user && !albumWorkoutDetailsPage && !startWorkoutPage && !page404 ? (
         <Appbar />
@@ -77,7 +78,7 @@ function InnerRoutes() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/public_album_workouts" element={<AlbumWorkout />} />
-              <Route path="/clock" element={<Storage />} />
+              <Route path="/storage" element={<Storage />} />
               <Route
                 path="/album_workouts_detail/:id"
                 element={<AlbumWorkoutDetails />}

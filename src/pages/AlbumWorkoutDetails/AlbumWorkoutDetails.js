@@ -1022,7 +1022,7 @@ function AlbumWorkoutDetails() {
           >
             <CircularProgress />
           </Box>
-        ) : albumContents?.length > 0 ? (
+        ) : albumContents?.length > 0 && albumWorkoutDetail ? (
           <div
             // sx={{
             //   display: "flex",

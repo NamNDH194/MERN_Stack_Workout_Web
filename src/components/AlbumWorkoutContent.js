@@ -55,7 +55,8 @@ function AlbumWorkoutContent({ albumWorkout }) {
   const [typeFileUpLoad, setTypeFileUpload] = useState("");
   const [titleAlbum, setTitleAlbum] = useState("");
   const [descriptionAlbum, setDescriptionAlbum] = useState("");
-  const [statusAlbum, setStatusAlbum] = useState("Public");
+  // const [statusAlbum, setStatusAlbum] = useState("Public");
+  const [statusAlbum, setStatusAlbum] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [openModalUpdate, setOpenModalUpdate] = useState(false);
   const [openModalDelete, setOpenModalDelete] = useState(false);
@@ -210,7 +211,8 @@ function AlbumWorkoutContent({ albumWorkout }) {
       !fileUpload &&
       !typeFileUpLoad &&
       !descriptionAlbum &&
-      statusAlbum === "Public"
+      // statusAlbum === "Public"
+      !statusAlbum
     ) {
       toast.error("Please change one field before update!");
     } else {
@@ -232,7 +234,7 @@ function AlbumWorkoutContent({ albumWorkout }) {
           } else {
             const albumWorkoutData = {
               imgURL: imgUrl,
-              status: statusAlbum,
+              // status: statusAlbum,
               imgPublicId: img_public_id,
               oldImgPublicId: albumWorkout?.imgPublicId,
             };
@@ -241,6 +243,9 @@ function AlbumWorkoutContent({ albumWorkout }) {
             }
             if (descriptionAlbum) {
               albumWorkoutData.description = descriptionAlbum;
+            }
+            if (statusAlbum) {
+              albumWorkoutData.status = statusAlbum;
             }
             const response = await fetch(
               `${API_ROOT}/v1/albumWorkout/${albumWorkout._id}`,
@@ -259,10 +264,15 @@ function AlbumWorkoutContent({ albumWorkout }) {
                 type: "UPDATE_ALBUM_WORKOUT",
                 payload: json,
               });
+              dispatchAlbumStorageContext({
+                type: "UPDATE_ALBUM_STORAGE",
+                payload: json,
+              });
               toast.success("Update album successfully!");
               setTitleAlbum("");
               setDescriptionAlbum("");
-              setStatusAlbum("Public");
+              // setStatusAlbum("Public");
+              setStatusAlbum("");
               setOpenModalUpdate(false);
               setTypeFileUpload("");
               setFileUpload("");
@@ -275,13 +285,16 @@ function AlbumWorkoutContent({ albumWorkout }) {
           }
         } else {
           const albumWorkoutData = {
-            status: statusAlbum,
+            // status: statusAlbum,
           };
           if (titleAlbum) {
             albumWorkoutData.title = titleAlbum;
           }
           if (descriptionAlbum) {
             albumWorkoutData.description = descriptionAlbum;
+          }
+          if (statusAlbum) {
+            albumWorkoutData.status = statusAlbum;
           }
           const response = await fetch(
             `${API_ROOT}/v1/albumWorkout/${albumWorkout._id}`,
@@ -300,10 +313,15 @@ function AlbumWorkoutContent({ albumWorkout }) {
               type: "UPDATE_ALBUM_WORKOUT",
               payload: json,
             });
+            dispatchAlbumStorageContext({
+              type: "UPDATE_ALBUM_STORAGE",
+              payload: json,
+            });
             toast.success("Update album successfully!");
             setTitleAlbum("");
             setDescriptionAlbum("");
-            setStatusAlbum("Public");
+            // setStatusAlbum("Public");
+            setStatusAlbum("");
             setOpenModalUpdate(false);
             setTypeFileUpload("");
             setFileUpload("");
@@ -339,6 +357,10 @@ function AlbumWorkoutContent({ albumWorkout }) {
 
     if (response.ok) {
       dispatchAlbumWorkoutContext({ type: "DELETE_WORKOUT", payload: json });
+      dispatchAlbumStorageContext({
+        type: "DELETE_STORAGE",
+        payload: json,
+      });
       setOpenModalDelete(false);
       toast.success("Delete successfully!");
       setIsLoading(false);
@@ -351,6 +373,7 @@ function AlbumWorkoutContent({ albumWorkout }) {
   };
 
   const handleLikeAlbum = async () => {
+    setIsLoading(true);
     const response = await fetch(
       `${API_ROOT}/v1/albumWorkout/like/${albumWorkout._id}`,
       {
@@ -371,9 +394,15 @@ function AlbumWorkoutContent({ albumWorkout }) {
         type: "UPDATE_ALBUM_WORKOUT",
         payload: json,
       });
+      dispatchAlbumStorageContext({
+        type: "UPDATE_ALBUM_STORAGE",
+        payload: json,
+      });
+      setIsLoading(false);
     }
     if (!response.ok) {
       toast.error("Something went wrong! please try again!");
+      setIsLoading(false);
     }
   };
 
@@ -382,6 +411,7 @@ function AlbumWorkoutContent({ albumWorkout }) {
   };
 
   const handleSaveAlbum = async () => {
+    setIsLoading(true);
     const response = await fetch(
       `${API_ROOT}/v1/albumStorage/${albumWorkout._id}`,
       {
@@ -401,13 +431,30 @@ function AlbumWorkoutContent({ albumWorkout }) {
         type: "UPDATE_ALBUM_WORKOUT",
         payload: json,
       });
-      isSaved
-        ? toast.success("Remove album from storage successfully!")
-        : toast.success("Save album to storage successfully!");
+
+      if (isSaved) {
+        dispatchAlbumStorageContext({
+          type: "DELETE_STORAGE",
+          payload: json,
+        });
+        toast.success("Remove album from storage successfully!");
+      }
+      if (!isSaved) {
+        dispatchAlbumStorageContext({
+          type: "UPDATE_ALBUM_STORAGE",
+          payload: json,
+        });
+        toast.success("Save album to storage successfully!");
+      }
+      // isSaved
+      //   ? toast.success("Remove album from storage successfully!")
+      //   : toast.success("Save album to storage successfully!");
       setIsSaved(!isSaved);
+      setIsLoading(false);
     }
     if (!response.ok) {
       toast.error("Something went wrong! please try again!");
+      setIsLoading(false);
     }
   };
 
@@ -486,7 +533,8 @@ function AlbumWorkoutContent({ albumWorkout }) {
                     setDescriptionAlbum("");
                     setTypeFileUpload("");
                     setFileUpload("");
-                    setStatusAlbum("Public");
+                    // setStatusAlbum("Public");
+                    setStatusAlbum("");
                     setOpenModalUpdate(false);
                   }
                 }}
@@ -608,7 +656,8 @@ function AlbumWorkoutContent({ albumWorkout }) {
                         }}
                         labelId="demo-simple-select-label"
                         id="demo-simple-select"
-                        value={statusAlbum === "Public" ? "Public" : "Private"}
+                        // value={statusAlbum === "Public" ? "Public" : "Private"}
+                        value={statusAlbum}
                         label="Status"
                         onChange={(e) => setStatusAlbum(e.target.value)}
                       >
@@ -713,7 +762,8 @@ function AlbumWorkoutContent({ albumWorkout }) {
                           setDescriptionAlbum("");
                           setTypeFileUpload("");
                           setFileUpload("");
-                          setStatusAlbum("Public");
+                          // setStatusAlbum("Public");
+                          setStatusAlbum("");
                           setOpenModalUpdate(false);
                         }}
                       >
@@ -866,7 +916,7 @@ function AlbumWorkoutContent({ albumWorkout }) {
             <Tooltip title="Like">
               <IconButton
                 aria-label="add to favorites"
-                onClick={handleLikeAlbum}
+                onClick={isLoading ? () => {} : handleLikeAlbum}
               >
                 <FavoriteIcon
                   sx={{ color: isLiked ? "#E00000" : "rgb(117 117 117)" }}
@@ -953,7 +1003,7 @@ function AlbumWorkoutContent({ albumWorkout }) {
             <Tooltip title="Remove album from storage">
               <IconButton
                 aria-label="share"
-                onClick={handleSaveAlbum}
+                onClick={isLoading ? () => {} : handleSaveAlbum}
                 sx={{ marginLeft: "10px" }}
               >
                 <BookmarkRemoveIcon />
@@ -963,7 +1013,7 @@ function AlbumWorkoutContent({ albumWorkout }) {
             <Tooltip title="Save to storage">
               <IconButton
                 aria-label="share"
-                onClick={handleSaveAlbum}
+                onClick={isLoading ? () => {} : handleSaveAlbum}
                 sx={{ marginLeft: "10px" }}
               >
                 <BookmarkIcon aria-label="add to store" />

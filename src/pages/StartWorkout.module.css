@@ -57,3 +57,17 @@
   height: 30px;
   background-color: blue;
 }
+
+.startWorkoutContent {
+  display: flex;
+  flex-direction: row;
+  position: relative;
+}
+
+@media screen and (max-width: 830px) {
+  .startWorkoutContent {
+    display: flex;
+    flex-direction: column;
+    gap: 300px;
+  }
+}

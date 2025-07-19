@@ -101,7 +101,7 @@ function Appbar() {
         className={styles.appbarElement}
         onMouseEnter={handleMouseFocus}
         onMouseLeave={handleMouseLeave}
-        onClick={() => navigate("/clock")}
+        onClick={() => navigate("/storage")}
       >
         <Typography sx={{ display: "flex", alignItems: "center", gap: "5px" }}>
           <BookmarksIcon /> Storage

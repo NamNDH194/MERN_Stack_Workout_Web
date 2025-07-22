@@ -23,7 +23,8 @@ header .container {
   justify-content: space-between;
 }
 header a {
-  color: #333;
+  /* color: #333; */
+  color: #fff;
   text-decoration: none;
 }
 
@@ -33,12 +34,12 @@ header a {
   margin: 0 auto;
 }
 
-.text-with-background-image {
+/* .text-with-background-image {
   background-image: url("https://static.vecteezy.com/system/resources/previews/041/388/946/non_2x/ai-generated-gym-weights-on-textured-background-fitness-concept-photo.jpg");
   background-position: top;
   background-clip: text;
   color: transparent;
-}
+} */
 
 /* homepage */
 .home {

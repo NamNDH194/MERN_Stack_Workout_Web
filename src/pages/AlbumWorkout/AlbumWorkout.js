@@ -26,6 +26,7 @@ import { env } from "../../config/environment";
 import { useAlbumWorkoutsContext } from "../../hooks/useAlbumWorkoutsContext";
 import AlbumWorkoutContent from "../../components/AlbumWorkoutContent";
 import { sort } from "../../ultilities/algorithms";
+import { useAlbumStoragesContext } from "../../hooks/useAlbumStoragesContext";
 
 function AlbumWorkout() {
   const [openModalCreateAlbum, setOpenModalCreateAlbum] = useState(false);
@@ -41,6 +42,7 @@ function AlbumWorkout() {
   const { user } = useAuthContext();
   const { albumWorkouts, dispatchAlbumWorkoutContext } =
     useAlbumWorkoutsContext();
+  const { dispatchAlbumStorageContext } = useAlbumStoragesContext();
 
   const styleModalCreateAlbum = {
     position: "absolute",
@@ -254,6 +256,41 @@ function AlbumWorkout() {
       setAlbumWorkoutDataDisplay(albumWorkouts);
     }
   }, [searchValue, albumWorkouts]);
+
+  useEffect(() => {
+    const fetchAlbumStorages = async () => {
+      const response = await fetch(`${API_ROOT}/v1/albumStorage/`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user?.token}`,
+        },
+      });
+
+      const json = await response.json();
+
+      if (response.ok) {
+        dispatchAlbumStorageContext({
+          type: "SET_ALBUM_STORAGE",
+          payload: json,
+        });
+        setIsLoading(false);
+      }
+
+      if (!response.ok) {
+        toast.error("Something went wrong! Please try again!");
+        setIsLoading(false);
+      }
+    };
+
+    if (user) {
+      setIsLoading(true);
+      fetchAlbumStorages();
+    } else {
+      toast.error("Something went wrong! Please try again!");
+    }
+  }, [dispatchAlbumStorageContext, user]);
+
   return (
     <div>
       <Box

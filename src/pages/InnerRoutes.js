@@ -10,6 +10,7 @@ import Auth from "./Auth";
 import Page404 from "./Page404";
 import AlbumWorkoutDetails from "./AlbumWorkoutDetails/AlbumWorkoutDetails";
 import StartWorkout from "./StartWorkout";
+import Profile from "./Profile/Profile";
 
 function InnerRoutes() {
   const { user } = useAuthContext();
@@ -21,11 +22,16 @@ function InnerRoutes() {
 
   const startWorkoutPage = /^\/start_workout\/[^/]+$/.test(location.pathname);
 
+  // const profilePage = /^\/profile\/[^/]+\/?$/.test(location.pathname);
+  const profilePage = /^\/profile\/?$/.test(location.pathname);
+
   const page404 = /^\/404\/?$/.test(location.pathname);
 
   const knownPatterns = [
     /^\/$/,
     /^\/login\/?$/,
+    // /^\/profile\/[^/]+\/?$/,
+    /^\/profile\/?$/,
     /^\/storage\/?$/,
     /^\/public_album_workouts\/?$/,
     /^\/album_workouts_detail\/[^/]+\/?$/,
@@ -52,7 +58,8 @@ function InnerRoutes() {
   if (
     !localStorage.getItem("user") &&
     albumWorkoutDetailsPage &&
-    startWorkoutPage
+    startWorkoutPage &&
+    profilePage
   ) {
     window.location.href = "/login";
   }
@@ -66,7 +73,11 @@ function InnerRoutes() {
       )} */}
       <Navbar />
 
-      {user && !albumWorkoutDetailsPage && !startWorkoutPage && !page404 ? (
+      {user &&
+      !albumWorkoutDetailsPage &&
+      !startWorkoutPage &&
+      !page404 &&
+      !profilePage ? (
         <Appbar />
       ) : (
         ""
@@ -77,6 +88,7 @@ function InnerRoutes() {
           {user ? (
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/profile" element={<Profile />} />
               <Route path="/public_album_workouts" element={<AlbumWorkout />} />
               <Route path="/storage" element={<Storage />} />
               <Route

@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { env } from "../config/environment";
 import { API_ROOT } from "../ultilities/constants";
 import { toast } from "react-toastify";
@@ -46,6 +46,7 @@ import Typography from "@mui/material/Typography";
 import CancelIcon from "@mui/icons-material/Cancel";
 import BookmarkRemoveIcon from "@mui/icons-material/BookmarkRemove";
 import { useAlbumStoragesContext } from "../hooks/useAlbumStoragesContext";
+import { useAlbumProfilesContext } from "../hooks/useAlbumProfilesContext";
 
 function AlbumWorkoutContent({ albumWorkout }) {
   const { user } = useAuthContext();
@@ -65,9 +66,12 @@ function AlbumWorkoutContent({ albumWorkout }) {
   const [openDialogLikeUsers, setOpenDialogLikeUsers] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   const { dispatchAlbumWorkoutContext } = useAlbumWorkoutsContext();
   const { dispatchAlbumStorageContext } = useAlbumStoragesContext();
+  const { albumProfiles, dispatchAlbumProfileContext } =
+    useAlbumProfilesContext();
 
   const styleModalUpdateAlbum = {
     position: "absolute",
@@ -119,40 +123,6 @@ function AlbumWorkoutContent({ albumWorkout }) {
       });
     }
   }, [albumWorkout, user]);
-
-  useEffect(() => {
-    const fetchAlbumStorages = async () => {
-      const response = await fetch(`${API_ROOT}/v1/albumStorage/`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${user?.token}`,
-        },
-      });
-
-      const json = await response.json();
-
-      if (response.ok) {
-        dispatchAlbumStorageContext({
-          type: "SET_ALBUM_STORAGE",
-          payload: json,
-        });
-        setIsLoading(false);
-      }
-
-      if (!response.ok) {
-        toast.error("Something went wrong! Please try again!");
-        setIsLoading(false);
-      }
-    };
-
-    if (user) {
-      setIsLoading(true);
-      fetchAlbumStorages();
-    } else {
-      toast.error("Something went wrong! Please try again!");
-    }
-  }, [dispatchAlbumStorageContext, user]);
 
   const handleCloseMenu = () => {
     setAnchorEl(null);
@@ -264,10 +234,22 @@ function AlbumWorkoutContent({ albumWorkout }) {
                 type: "UPDATE_ALBUM_WORKOUT",
                 payload: json,
               });
+
               dispatchAlbumStorageContext({
                 type: "UPDATE_ALBUM_STORAGE",
                 payload: json,
               });
+
+              if (
+                location.pathname === "/profile" &&
+                albumProfiles?.length > 0
+              ) {
+                dispatchAlbumProfileContext({
+                  type: "UPDATE_ALBUM_PROFILE",
+                  payload: json,
+                });
+              }
+
               toast.success("Update album successfully!");
               setTitleAlbum("");
               setDescriptionAlbum("");
@@ -313,10 +295,19 @@ function AlbumWorkoutContent({ albumWorkout }) {
               type: "UPDATE_ALBUM_WORKOUT",
               payload: json,
             });
+
             dispatchAlbumStorageContext({
               type: "UPDATE_ALBUM_STORAGE",
               payload: json,
             });
+
+            if (location.pathname === "/profile" && albumProfiles?.length > 0) {
+              dispatchAlbumProfileContext({
+                type: "UPDATE_ALBUM_PROFILE",
+                payload: json,
+              });
+            }
+
             toast.success("Update album successfully!");
             setTitleAlbum("");
             setDescriptionAlbum("");
@@ -361,6 +352,13 @@ function AlbumWorkoutContent({ albumWorkout }) {
         type: "DELETE_STORAGE",
         payload: json,
       });
+
+      if (location.pathname === "/profile" && albumProfiles?.length > 0) {
+        dispatchAlbumProfileContext({
+          type: "DELETE_ALBUM_PROFILE",
+          payload: json,
+        });
+      }
       setOpenModalDelete(false);
       toast.success("Delete successfully!");
       setIsLoading(false);
@@ -394,10 +392,20 @@ function AlbumWorkoutContent({ albumWorkout }) {
         type: "UPDATE_ALBUM_WORKOUT",
         payload: json,
       });
+
       dispatchAlbumStorageContext({
         type: "UPDATE_ALBUM_STORAGE",
         payload: json,
       });
+
+      if (location.pathname === "/profile" && albumProfiles?.length > 0) {
+        console.log("OK");
+        dispatchAlbumProfileContext({
+          type: "UPDATE_ALBUM_PROFILE",
+          payload: json,
+        });
+      }
+
       setIsLoading(false);
     }
     if (!response.ok) {
@@ -446,6 +454,13 @@ function AlbumWorkoutContent({ albumWorkout }) {
         });
         toast.success("Save album to storage successfully!");
       }
+
+      if (location.pathname === "/profile" && albumProfiles?.length > 0) {
+        dispatchAlbumProfileContext({
+          type: "UPDATE_ALBUM_PROFILE",
+          payload: json,
+        });
+      }
       // isSaved
       //   ? toast.success("Remove album from storage successfully!")
       //   : toast.success("Save album to storage successfully!");
@@ -478,7 +493,13 @@ function AlbumWorkoutContent({ albumWorkout }) {
       <CardHeader
         avatar={
           <Tooltip title={albumWorkout?.userName}>
-            <Avatar aria-label="recipe" src={albumWorkout?.avatarImg}></Avatar>
+            <Avatar
+              aria-label="recipe"
+              src={albumWorkout?.avatarImg}
+              onClick={() => {
+                navigate("/profile", { state: albumWorkout?.userId });
+              }}
+            ></Avatar>
           </Tooltip>
         }
         action={
@@ -987,8 +1008,16 @@ function AlbumWorkoutContent({ albumWorkout }) {
                           aria-label="recipe"
                           src={item?.avatarImg}
                           sx={{ cursor: "pointer" }}
+                          onClick={() => {
+                            navigate("/profile", { state: item?._id });
+                          }}
                         ></Avatar>
-                        <span style={{ cursor: "pointer" }}>
+                        <span
+                          style={{ cursor: "pointer" }}
+                          onClick={() => {
+                            navigate("/profile", { state: item?._id });
+                          }}
+                        >
                           {item?.userName}
                         </span>
                       </Box>

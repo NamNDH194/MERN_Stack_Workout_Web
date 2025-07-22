@@ -1,0 +1,35 @@
+.header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.inforHeader {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.inforAccount {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+}
+
+@media screen and (max-width: 830px) {
+  .header {
+    justify-content: center;
+    flex-direction: column;
+  }
+  .inforHeader {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+  }
+  .inforAccount {
+    align-items: center;
+  }
+}

@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuthContext } from "../hooks/useAuthContext";
 import { useWorkoutsContext } from "../hooks/useWorkoutsContext";
 
@@ -13,6 +13,8 @@ const Navbar = (props) => {
   const { dispatch, user } = useAuthContext();
   const { dispatchWorkoutContext } = useWorkoutsContext();
   const navigate = useNavigate();
+  const location = useLocation();
+
   const handleLogOut = () => {
     setAnchorEl(null);
     localStorage.removeItem("user");
@@ -27,9 +29,10 @@ const Navbar = (props) => {
           <Link to="/">
             <h1 className="text-with-background-image">Workout Buddy</h1>
           </Link>
+
           {user ? (
             <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
-              <p style={{ fontSize: "23px" }}>{user.userName}</p>
+              <p style={{ fontSize: "23px", color: "#fff" }}>{user.userName}</p>
 
               <div>
                 <Avatar
@@ -53,9 +56,17 @@ const Navbar = (props) => {
                     },
                   }}
                 >
-                  <MenuItem onClick={() => setAnchorEl(null)}>Profile</MenuItem>
-                  <MenuItem onClick={() => setAnchorEl(null)}>
-                    My account
+                  <MenuItem
+                    onClick={() => {
+                      if (location.pathname !== "/profile") {
+                        navigate("/profile", {
+                          state: user?.userId,
+                        });
+                        setAnchorEl(null);
+                      }
+                    }}
+                  >
+                    My Profile
                   </MenuItem>
                   <MenuItem onClick={handleLogOut}>Logout</MenuItem>
                 </Menu>

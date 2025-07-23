@@ -32,7 +32,9 @@ const Navbar = (props) => {
 
           {user ? (
             <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
-              <p style={{ fontSize: "23px", color: "#fff" }}>{user.userName}</p>
+              <p style={{ fontSize: "23px", color: "#fff" }}>
+                {user?.userName}
+              </p>
 
               <div>
                 <Avatar
@@ -58,12 +60,12 @@ const Navbar = (props) => {
                 >
                   <MenuItem
                     onClick={() => {
-                      if (location.pathname !== "/profile") {
-                        navigate("/profile", {
-                          state: user?.userId,
-                        });
-                        setAnchorEl(null);
-                      }
+                      // if (location.pathname !== "/profile") {
+                      navigate("/profile", {
+                        state: user?.userId,
+                      });
+                      setAnchorEl(null);
+                      // }
                     }}
                   >
                     My Profile

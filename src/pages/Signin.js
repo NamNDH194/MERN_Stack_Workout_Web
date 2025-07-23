@@ -32,7 +32,7 @@ function Signin() {
       user.userId = decoded._id;
 
       localStorage.setItem("user", JSON.stringify(json));
-
+      console.log(json);
       dispatch({ type: "LOGIN", payload: user });
       navigate("/");
     }

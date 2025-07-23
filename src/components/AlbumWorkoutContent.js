@@ -240,15 +240,15 @@ function AlbumWorkoutContent({ albumWorkout }) {
                 payload: json,
               });
 
-              if (
-                location.pathname === "/profile" &&
-                albumProfiles?.length > 0
-              ) {
-                dispatchAlbumProfileContext({
-                  type: "UPDATE_ALBUM_PROFILE",
-                  payload: json,
-                });
-              }
+              // if (
+              //   location.pathname === "/profile" &&
+              //   albumProfiles?.length > 0
+              // ) {
+              dispatchAlbumProfileContext({
+                type: "UPDATE_ALBUM_PROFILE",
+                payload: json,
+              });
+              // }
 
               toast.success("Update album successfully!");
               setTitleAlbum("");
@@ -301,12 +301,12 @@ function AlbumWorkoutContent({ albumWorkout }) {
               payload: json,
             });
 
-            if (location.pathname === "/profile" && albumProfiles?.length > 0) {
-              dispatchAlbumProfileContext({
-                type: "UPDATE_ALBUM_PROFILE",
-                payload: json,
-              });
-            }
+            // if (location.pathname === "/profile" && albumProfiles?.length > 0) {
+            dispatchAlbumProfileContext({
+              type: "UPDATE_ALBUM_PROFILE",
+              payload: json,
+            });
+            // }
 
             toast.success("Update album successfully!");
             setTitleAlbum("");
@@ -353,12 +353,12 @@ function AlbumWorkoutContent({ albumWorkout }) {
         payload: json,
       });
 
-      if (location.pathname === "/profile" && albumProfiles?.length > 0) {
-        dispatchAlbumProfileContext({
-          type: "DELETE_ALBUM_PROFILE",
-          payload: json,
-        });
-      }
+      // if (location.pathname === "/profile" && albumProfiles?.length > 0) {
+      dispatchAlbumProfileContext({
+        type: "DELETE_ALBUM_PROFILE",
+        payload: json,
+      });
+      // }
       setOpenModalDelete(false);
       toast.success("Delete successfully!");
       setIsLoading(false);
@@ -398,13 +398,12 @@ function AlbumWorkoutContent({ albumWorkout }) {
         payload: json,
       });
 
-      if (location.pathname === "/profile" && albumProfiles?.length > 0) {
-        console.log("OK");
-        dispatchAlbumProfileContext({
-          type: "UPDATE_ALBUM_PROFILE",
-          payload: json,
-        });
-      }
+      // if (location.pathname === "/profile" && albumProfiles?.length > 0) {
+      dispatchAlbumProfileContext({
+        type: "UPDATE_ALBUM_PROFILE",
+        payload: json,
+      });
+      // }
 
       setIsLoading(false);
     }
@@ -455,12 +454,12 @@ function AlbumWorkoutContent({ albumWorkout }) {
         toast.success("Save album to storage successfully!");
       }
 
-      if (location.pathname === "/profile" && albumProfiles?.length > 0) {
-        dispatchAlbumProfileContext({
-          type: "UPDATE_ALBUM_PROFILE",
-          payload: json,
-        });
-      }
+      // if (location.pathname === "/profile" && albumProfiles?.length > 0) {
+      dispatchAlbumProfileContext({
+        type: "UPDATE_ALBUM_PROFILE",
+        payload: json,
+      });
+      // }
       // isSaved
       //   ? toast.success("Remove album from storage successfully!")
       //   : toast.success("Save album to storage successfully!");
